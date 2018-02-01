@@ -12,6 +12,7 @@ public class MainActivity extends AppCompatActivity {
     private UserLocationHandler gpsHandler;
     private ApiClient client;
     private List<Attractions> attractions;
+    private Find_Nearby_Tourist_Handler locHandler;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -41,7 +42,7 @@ public class MainActivity extends AppCompatActivity {
         attractions = serverEvent.getAttraction();
         //tv.setText(attractions.get(0).getName());
         Toast.makeText(this,""+serverEvent.getServerMessage(),Toast.LENGTH_SHORT).show();
-        //locHandler.getNearestAttractions(attractions);
+        locHandler.getNearestAttractions(attractions);
 
 
 
