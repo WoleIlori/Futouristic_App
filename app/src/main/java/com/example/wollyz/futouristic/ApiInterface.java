@@ -24,4 +24,8 @@ public interface ApiInterface {
     Call<List<AmtTouristNearby>> doGetAllTouristNearby(
             @Query("username") String username
     );
+
+    @Headers("Content-Type: application/json")
+    @POST("touristinterest")
+    Call<String> addTouristLandmarkInterest(@Body Object touristInterest);
 }

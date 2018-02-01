@@ -183,6 +183,24 @@ public class ApiClient {
         });
     }
 
+    public void postTouristLandmarkChoice(TouristInterest touristInterest){
+        ApiInterface apiService = retrofit.create(ApiInterface.class);
+        Call<String> call = apiService.addTouristLandmarkInterest(touristInterest);
+
+        call.enqueue(new Callback<String>() {
+            @Override
+            public void onResponse(Call<String> call, Response<String> response) {
+                BusProvider.getInstance().post(new ResponseEvent(response.message()));
+            }
+
+            @Override
+            public void onFailure(Call<String> call, Throwable t) {
+                BusProvider.getInstance().post(new ErrorEvent(-2,t.getMessage()));
+
+            }
+        });
+    }
+
 
 
 

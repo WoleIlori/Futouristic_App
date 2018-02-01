@@ -42,7 +42,6 @@ public class SwipeAdapter extends PagerAdapter {
         TextView textView = (TextView)item_view.findViewById(R.id.textview);
         textView.setText(landmarksToNotify.get(position));
         Button button = (Button)item_view.findViewById(R.id.addBtn);
-        /*
         button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -50,8 +49,6 @@ public class SwipeAdapter extends PagerAdapter {
 
             }
         });
-        */
-
         container.addView(item_view);
         return item_view;
 

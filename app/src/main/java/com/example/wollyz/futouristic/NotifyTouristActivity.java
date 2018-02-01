@@ -15,7 +15,7 @@ public class NotifyTouristActivity extends AppCompatActivity {
     private SwipeAdapter swipeAdapter;
     private ArrayList<String> landmarksToNotify;
     private ApiClient client;
-    //private TouristInterest touristInterest;
+    private TouristInterest touristInterest;
 
 
     @Override
@@ -23,7 +23,7 @@ public class NotifyTouristActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_notify_tourist);
         client = new ApiClient(this);
-        //touristInterest = new TouristInterest();
+        touristInterest = new TouristInterest();
         landmarksToNotify = new ArrayList<String>();
         Bundle var = getIntent().getExtras();
         landmarksToNotify = var.getStringArrayList("list");
@@ -46,7 +46,21 @@ public class NotifyTouristActivity extends AppCompatActivity {
         BusProvider.getInstance().unregister(this);
     }
 
+    @Subscribe
+    public void onLandmarkSelectedEvent(UserInterestEvent userInterest){
+        String landmarkChoice = userInterest.getSelectedLandmark();
+        touristInterest.setUsername(MainActivity.username);
+        touristInterest.setLandmark(landmarkChoice);
+        client.postTouristLandmarkChoice(touristInterest);
 
+    }
+
+    @Subscribe
+    public void onPostTouristChoiceEvent(ResponseEvent serverEvent){
+        String message = serverEvent.getResponseMessage() + ": Tourist interest saved";
+        Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
+        finish();
+    }
 
 
 

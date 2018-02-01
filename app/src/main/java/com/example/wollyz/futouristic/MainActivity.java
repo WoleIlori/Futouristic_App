@@ -21,7 +21,7 @@ public class MainActivity extends AppCompatActivity {
     private List<AmtTouristNearby> amtTouristList;
     private static final int REQUIRED_AMT = 2;
     private ArrayList<String> notify_landmarks;
-    private String username;
+    public static final String username = "jbyrne";
     private NotificationUtils notificationUtils;
 
     @Override
