@@ -7,7 +7,7 @@ import java.util.List;
 /**
  * Created by Wollyz on 01/02/2018.
  */
-public class Find_Nearby_Tourist_Handler {
+public class LandmarksNearbyHandler {
     private double longitude;
     private double latitude;
     private UserLocationHandler locManager;
@@ -20,7 +20,7 @@ public class Find_Nearby_Tourist_Handler {
 
 
 
-    Find_Nearby_Tourist_Handler(double latitude, double longitude){ //double latitude, double longitude
+    LandmarksNearbyHandler(double latitude, double longitude){ //double latitude, double longitude
         heapSize = 3;
         this.latitude = latitude;
         this.longitude = longitude;

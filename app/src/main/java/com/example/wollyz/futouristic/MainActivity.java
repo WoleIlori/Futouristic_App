@@ -6,6 +6,7 @@ import android.widget.Toast;
 
 import org.greenrobot.eventbus.Subscribe;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
@@ -13,15 +14,20 @@ public class MainActivity extends AppCompatActivity {
     private ApiClient client;
     private List<Attractions> attractions;
     private NearbyAttraction nearby;
-    private Find_Nearby_Tourist_Handler locHandler;
+    private LandmarksNearbyHandler locHandler;
+    private List<AmtTouristNearby> amtTouristList;
+    private static final int REQUIRED_AMT = 2;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         gpsHandler = new UserLocationHandler(this);
+        amtTouristList = new ArrayList<AmtTouristNearby>();
+        locHandler = new LandmarksNearbyHandler(53.3428,-6.2980);
         client = new ApiClient(this);
         client.getAttractions();
+
 
     }
 
@@ -62,6 +68,13 @@ public class MainActivity extends AppCompatActivity {
         String message = serverEvent.getResponseMessage();
         Toast.makeText(getApplicationContext(), message, Toast.LENGTH_SHORT).show();
         //client.getAmtTouristsNearby(username);
+
+    }
+
+    @Subscribe
+    public void onGetEvent(TouristAmtEvent serverEvent){
+        AmtTouristNearby amtTourist;
+        amtTouristList = serverEvent.getAmtTourist();
 
     }
 

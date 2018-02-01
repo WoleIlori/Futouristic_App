@@ -149,31 +149,6 @@ public class ApiClient {
 
 
         ApiInterface apiService = retrofit.create(ApiInterface.class);
-        /*
-        try{
-            JSONObject paramObject = new JSONObject();
-            paramObject.put("username", nearby.getUsername());
-            paramObject.put("attractions", nearby.getAttractions());
-            paramObject.put("distances", nearby.getDistances());
-            Call<String> call = apiService.addNearbyAttractions(paramObject.toString());
-
-            call.enqueue(new Callback<String>() {
-                @Override
-                public void onResponse(Call<String> call, Response<String> response) {
-                    BusProvider.getInstance().post(new PostAcceptedEvent(response.message()));
-                }
-
-                @Override
-                public void onFailure(Call<String> call, Throwable t) {
-                    BusProvider.getInstance().post(new ErrorEvent(-2,t.getMessage()));
-
-                }
-            });
-        }
-        catch (JSONException e){
-            e.printStackTrace();
-        }
-        */
         Call<String> call = apiService.addNearbyAttractions(nearby);
 
         call.enqueue(new Callback<String>() {
@@ -190,6 +165,23 @@ public class ApiClient {
         });
     }
 
+    public void getAmtTouristsNearby(String username){
+        ApiInterface apiService = retrofit.create(ApiInterface.class);
+        Call<List<AmtTouristNearby>> call = apiService.doGetAllTouristNearby(username);
+
+        call.enqueue(new Callback<List<AmtTouristNearby>>() {
+            @Override
+            public void onResponse(Call<List<AmtTouristNearby>> call, Response<List<AmtTouristNearby>> response) {
+                BusProvider.getInstance().post(new TouristAmtEvent(response.body(),response.message()));
+            }
+
+            @Override
+            public void onFailure(Call<List<AmtTouristNearby>> call, Throwable t) {
+                BusProvider.getInstance().post(new ErrorEvent(-2,t.getMessage()));
+
+            }
+        });
+    }
 
 
 
