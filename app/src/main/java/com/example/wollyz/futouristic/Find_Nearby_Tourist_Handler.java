@@ -13,7 +13,7 @@ public class Find_Nearby_Tourist_Handler {
     private UserLocationHandler locManager;
     private double[] distance; //distance for attraction
     private int[] attractionIndex;
-    //private NearbyAttraction nearby;
+    private NearbyAttraction nearby;
     private int heapSize; //size of k ie. kth nearest attractions
     private Context c;
     private MaxHeap maxheap;
@@ -26,10 +26,10 @@ public class Find_Nearby_Tourist_Handler {
         this.longitude = longitude;
         maxheap = new MaxHeap(heapSize);
         attractionIndex = new int[heapSize + 1];
-        //nearby = new NearbyAttraction();
+        nearby = new NearbyAttraction();
     }
 
-    public void getNearestAttractions(List<Attractions> attractions)
+    public NearbyAttraction getNearestAttractions(List<Attractions> attractions)
     {
         //latitude = locManager.getUserLatitude();
         //longitude = locManager.getUserLongitude();
@@ -60,13 +60,12 @@ public class Find_Nearby_Tourist_Handler {
         {
             index = attractionIndex[i];
             name = attractions.get(index).getName();
-            //nearby.setAttraction(name);
+            nearby.setAttraction(name);
             dist = distance[index];
-            //nearby.setDistance(dist);
-            System.out.println(name + ": " + dist);
+            nearby.setDistance(dist);
 
         }
-
+        return nearby;
     }
 
 

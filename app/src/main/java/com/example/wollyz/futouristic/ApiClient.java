@@ -2,6 +2,9 @@ package com.example.wollyz.futouristic;
 
 import android.content.Context;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.security.KeyManagementException;
@@ -33,7 +36,9 @@ import retrofit2.converter.gson.GsonConverterFactory;
  * Created by Wollyz on 01/02/2018.
  */
 public class ApiClient {
-    private static final String BASE_URL = "https://192.168.1.14/FutouristicApi/v1/";
+    //netstat -an | find "LISTEN" to find ip address in xampp
+    private static final String BASE_URL = "https://147.252.139.38/futouristicapi/v1/";
+
     private static Retrofit retrofit = null;
     private List<Attractions> attractions;
     private String[] names;
@@ -49,12 +54,21 @@ public class ApiClient {
         logging.setLevel(HttpLoggingInterceptor.Level.BODY);
         attractions = new ArrayList<Attractions>();
         httpClient = new OkHttpClient.Builder();
+        //.connectTimeout(100, TimeUnit.SECONDS)
+        //.readTimeout(100,TimeUnit.SECONDS);
+
         httpClient.addInterceptor(logging);
         initSSL();
 
+        Gson gson = new GsonBuilder()
+                .setLenient()
+                .create();
+
+
         retrofit = new Retrofit.Builder()
                 .baseUrl(BASE_URL)
-                .addConverterFactory(GsonConverterFactory.create())
+                //.addConverterFactory(ScalarsConverterFactory.create())
+                .addConverterFactory(GsonConverterFactory.create(gson))
                 .client(httpClient.build())
                 .build();
 
@@ -116,7 +130,7 @@ public class ApiClient {
         call.enqueue(new Callback<List<Attractions>>() {
             @Override
             public void onResponse(Call<List<Attractions>> call, Response<List<Attractions>> response) {
-                BusProvider.getInstance().post(new ServerEvent(response.body(),response.message()));
+                BusProvider.getInstance().post(new AttractionsReceivedEvent(response.body(),response.message()));
             }
 
             @Override
@@ -126,4 +140,58 @@ public class ApiClient {
             }
         });
     }
+
+    public void postLandmarksNearTourist(NearbyAttraction nearby){
+        //Field parameters
+        //String username = nearby.getUsername();
+        //List<String> attractions = nearby.getAttractions();
+        //List<Double> distances = nearby.getDistances();
+
+
+        ApiInterface apiService = retrofit.create(ApiInterface.class);
+        /*
+        try{
+            JSONObject paramObject = new JSONObject();
+            paramObject.put("username", nearby.getUsername());
+            paramObject.put("attractions", nearby.getAttractions());
+            paramObject.put("distances", nearby.getDistances());
+            Call<String> call = apiService.addNearbyAttractions(paramObject.toString());
+
+            call.enqueue(new Callback<String>() {
+                @Override
+                public void onResponse(Call<String> call, Response<String> response) {
+                    BusProvider.getInstance().post(new PostAcceptedEvent(response.message()));
+                }
+
+                @Override
+                public void onFailure(Call<String> call, Throwable t) {
+                    BusProvider.getInstance().post(new ErrorEvent(-2,t.getMessage()));
+
+                }
+            });
+        }
+        catch (JSONException e){
+            e.printStackTrace();
+        }
+        */
+        Call<String> call = apiService.addNearbyAttractions(nearby);
+
+        call.enqueue(new Callback<String>() {
+            @Override
+            public void onResponse(Call<String> call, Response<String> response) {
+                BusProvider.getInstance().post(new ResponseEvent(response.message()));
+            }
+
+            @Override
+            public void onFailure(Call<String> call, Throwable t) {
+                BusProvider.getInstance().post(new ErrorEvent(-2,t.getMessage()));
+
+            }
+        });
+    }
+
+
+
+
+
 }

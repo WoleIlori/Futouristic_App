@@ -12,6 +12,7 @@ public class MainActivity extends AppCompatActivity {
     private UserLocationHandler gpsHandler;
     private ApiClient client;
     private List<Attractions> attractions;
+    private NearbyAttraction nearby;
     private Find_Nearby_Tourist_Handler locHandler;
 
     @Override
@@ -42,7 +43,11 @@ public class MainActivity extends AppCompatActivity {
         attractions = serverEvent.getAttraction();
         //tv.setText(attractions.get(0).getName());
         Toast.makeText(this,""+serverEvent.getServerMessage(),Toast.LENGTH_SHORT).show();
-        locHandler.getNearestAttractions(attractions);
+        nearby = locHandler.getNearestAttractions(attractions);
+        if(nearby!= null) {
+            client.postLandmarksNearTourist(nearby);
+
+        }
 
 
 
@@ -51,5 +56,14 @@ public class MainActivity extends AppCompatActivity {
     public void onErrorEvent(ErrorEvent errorEvent){
         Toast.makeText(this,""+errorEvent.getErrorMsg(),Toast.LENGTH_SHORT).show();
     }
+
+    @Subscribe
+    public void onPostEvent(ResponseEvent serverEvent){
+        String message = serverEvent.getResponseMessage();
+        Toast.makeText(getApplicationContext(), message, Toast.LENGTH_SHORT).show();
+        //client.getAmtTouristsNearby(username);
+
+    }
+
 
 }
