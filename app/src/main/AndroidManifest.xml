@@ -19,7 +19,10 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".NotifyTouristActivity"></activity>
+        <activity android:name=".NotifyTouristActivity" />
+        <activity android:name=".LoginActivity" />
+        <activity android:name=".TouristMainActivity" />
+        <activity android:name=".GuideMainActivity"></activity>
     </application>
 
 </manifest>

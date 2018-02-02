@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.app.NotificationCompat;
+import android.widget.Button;
 import android.widget.Toast;
 
 import org.greenrobot.eventbus.Subscribe;
@@ -28,6 +29,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        /*
         gpsHandler = new UserLocationHandler(this);
         notify_landmarks = new ArrayList<String>();
         amtTouristList = new ArrayList<AmtTouristNearby>();
@@ -35,6 +37,11 @@ public class MainActivity extends AppCompatActivity {
         locHandler = new LandmarksNearbyHandler(53.3428,-6.2980);
         client = new ApiClient(this);
         client.getAttractions();
+        */
+        Button loginBtn = (Button)findViewById(R.id.btn);
+        Intent intent = new Intent(this, LoginActivity.class);
+        startActivity(intent);
+
 
 
     }

@@ -201,7 +201,43 @@ public class ApiClient {
         });
     }
 
+    public void getUserLoginInfo(String username, String password, String userType){
+        ApiInterface apiService = retrofit.create(ApiInterface.class);
 
+        if(userType == "tourist"){
+            Call<String> call = apiService.getTouristLoginInfo(username,password);
 
+            call.enqueue(new Callback<String>() {
+                @Override
+                public void onResponse(Call<String> call, Response<String> response) {
+                    BusProvider.getInstance().post(new ResponseEvent(response.message()));
+                }
 
+                @Override
+                public void onFailure(Call<String> call, Throwable t) {
+                    BusProvider.getInstance().post(new ErrorEvent(-2,t.getMessage()));
+
+                }
+            });
+        }
+
+        if(userType == "guide"){
+            Call<String> call = apiService.getGuideLoginInfo(username,password);
+
+            call.enqueue(new Callback<String>() {
+                @Override
+                public void onResponse(Call<String> call, Response<String> response) {
+                    BusProvider.getInstance().post(new ResponseEvent(response.message()));
+                }
+
+                @Override
+                public void onFailure(Call<String> call, Throwable t) {
+                    BusProvider.getInstance().post(new ErrorEvent(-2,t.getMessage()));
+
+                }
+            });
+        }
+
+    }
+    
 }

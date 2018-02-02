@@ -19,7 +19,12 @@ public interface ApiInterface {
     @Headers("Content-Type: application/json")
     @POST("nearlandmark")
     Call<String> addNearbyAttractions(@Body Object nearbyAttraction);
-
+    /*
+    @GET("nearbytourists")
+    Call<List<AmtTouristNearby>> doGetAllTouristNearby(
+            @Query("landmarks[]") List<String> landmarks
+    );
+    */
     @GET("nearbytourists")
     Call<List<AmtTouristNearby>> doGetAllTouristNearby(
             @Query("username") String username
@@ -28,4 +33,16 @@ public interface ApiInterface {
     @Headers("Content-Type: application/json")
     @POST("touristinterest")
     Call<String> addTouristLandmarkInterest(@Body Object touristInterest);
+
+    @GET("touristlogin")
+    Call<String> getTouristLoginInfo(
+            @Query("username") String username,
+            @Query("password") String pass
+    );
+
+    @GET("guidelogin")
+    Call<String> getGuideLoginInfo(
+            @Query("username") String username,
+            @Query("password") String pass
+    );
 }
