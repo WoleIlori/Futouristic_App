@@ -36,6 +36,7 @@ import retrofit2.converter.gson.GsonConverterFactory;
  * Created by Wollyz on 01/02/2018.
  */
 public class ApiClient {
+
     //netstat -an | find "LISTEN" to find ip address in xampp
     private static final String BASE_URL = "https://147.252.139.38/futouristicapi/v1/";
 
@@ -239,5 +240,23 @@ public class ApiClient {
         }
 
     }
-    
+
+
+    public void postGuideLandmarkSelection(GuideSelection guideSelection){
+        ApiInterface apiService = retrofit.create(ApiInterface.class);
+        Call<String> call = apiService.addGuideLandmarkSelection(guideSelection);
+
+        call.enqueue(new Callback<String>() {
+            @Override
+            public void onResponse(Call<String> call, Response<String> response) {
+                BusProvider.getInstance().post(new ResponseEvent(response.body()));
+            }
+
+            @Override
+            public void onFailure(Call<String> call, Throwable t) {
+                BusProvider.getInstance().post(new ErrorEvent(-2,t.getMessage()));
+
+            }
+        });
+    }
 }

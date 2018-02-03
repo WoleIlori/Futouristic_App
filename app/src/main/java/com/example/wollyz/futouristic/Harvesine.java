@@ -5,11 +5,11 @@ package com.example.wollyz.futouristic;
  */
 public class Harvesine {
 
-    public static double calculateDist(double startLat,double startLong, Attractions attraction){
+    public static double calculateDist(double startLat,double startLong, double landmarkLat, double landmarkLong){
         //Reference: https://github.com/jasonwinn/haversine/blob/master/Haversine.java
-        int earth_radius = 6371;
-        double endLat = attraction.getLatitude();
-        double endLong = attraction.getLongitude();
+        final int EARTH_RADIUS = 6371;
+        double endLat = landmarkLat;
+        double endLong = landmarkLong;
 
 
         double dLat = Math.toRadians((endLat - startLat)); //difference between latitude
@@ -21,7 +21,7 @@ public class Harvesine {
         double a = harvesin(dLat) + Math.cos(startLat) * Math.cos(endLat) * harvesin(dLong);
         double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
 
-        return earth_radius * c;
+        return EARTH_RADIUS * c;
 
 
     }

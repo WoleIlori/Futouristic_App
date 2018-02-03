@@ -22,7 +22,8 @@
         <activity android:name=".NotifyTouristActivity" />
         <activity android:name=".LoginActivity" />
         <activity android:name=".TouristMainActivity" />
-        <activity android:name=".GuideMainActivity"></activity>
+        <activity android:name=".GuideMainActivity" />
+        <activity android:name=".GuideLandmarkSelectionActivity"></activity>
     </application>
 
 </manifest>

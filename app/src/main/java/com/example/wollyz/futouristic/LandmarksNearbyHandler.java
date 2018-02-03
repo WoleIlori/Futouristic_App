@@ -37,13 +37,17 @@ public class LandmarksNearbyHandler {
         double dist;
         distance = new double[attractions.size()];
         int index;
+        double landmark_lat;
+        double landmark_long;
 
         //calculating distance between user current location and all attractions
         System.out.println("distance:");
 
 
         for(int i = 0; i < attractions.size(); i++){
-            distance[i] = Harvesine.calculateDist(latitude,longitude,attractions.get(i));
+            landmark_lat = attractions.get(i).getLatitude();
+            landmark_long = attractions.get(i).getLongitude();
+            distance[i] = Harvesine.calculateDist(latitude,longitude,landmark_lat,landmark_long);
             System.out.println(distance[i]);
         }
 

@@ -60,7 +60,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     @Subscribe
-    public void onServerEvent(ServerEvent serverEvent){
+    public void onServerEvent(AttractionsReceivedEvent serverEvent){
         attractions = serverEvent.getAttraction();
         //tv.setText(attractions.get(0).getName());
         Toast.makeText(this,""+serverEvent.getServerMessage(),Toast.LENGTH_SHORT).show();

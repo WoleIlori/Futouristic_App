@@ -45,4 +45,9 @@ public interface ApiInterface {
             @Query("username") String username,
             @Query("password") String pass
     );
+
+    @Headers("Content-Type: application/json")
+    @POST("guideselection")
+    Call<String> addGuideLandmarkSelection(@Body Object guideSelection);
+
 }

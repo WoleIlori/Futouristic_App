@@ -14,12 +14,12 @@ import java.util.ArrayList;
 /**
  * Created by Wollyz on 01/02/2018.
  */
-public class SwipeAdapter extends PagerAdapter {
+public class TouristSwipeAdapter extends PagerAdapter {
     private Context ctx;
     private ArrayList<String> landmarksToNotify;
     private LayoutInflater layoutInflater;
 
-    public SwipeAdapter(Context ctx, ArrayList<String> landmarksToNotify)
+    public TouristSwipeAdapter(Context ctx, ArrayList<String> landmarksToNotify)
     {
         this.ctx = ctx;
         this.landmarksToNotify = landmarksToNotify;

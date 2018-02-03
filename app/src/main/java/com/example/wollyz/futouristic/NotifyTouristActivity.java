@@ -12,7 +12,7 @@ import java.util.ArrayList;
 public class NotifyTouristActivity extends AppCompatActivity {
 
     private ViewPager viewPager;
-    private SwipeAdapter swipeAdapter;
+    private TouristSwipeAdapter swipeAdapter;
     private ArrayList<String> landmarksToNotify;
     private ApiClient client;
     private TouristInterest touristInterest;
@@ -28,7 +28,7 @@ public class NotifyTouristActivity extends AppCompatActivity {
         Bundle var = getIntent().getExtras();
         landmarksToNotify = var.getStringArrayList("list");
         viewPager = (ViewPager)findViewById(R.id.view_pager);
-        swipeAdapter = new SwipeAdapter(this,landmarksToNotify);
+        swipeAdapter = new TouristSwipeAdapter(this,landmarksToNotify);
         viewPager.setAdapter(swipeAdapter);
 
 
