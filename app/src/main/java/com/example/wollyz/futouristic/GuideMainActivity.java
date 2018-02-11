@@ -22,8 +22,11 @@ public class GuideMainActivity extends AppCompatActivity {
     private Button selBtn;
     private final int INTEGER_VALUE = 1;
     private List<String> chosenLandmarks;
-    private int[] chosenLandmarksIndex;
+    private List<Integer> chosenLandmarksIndex;
     private List<Double> landmarkDist;
+    private final double NOTIFY_DIST = 1.5;
+    private ArrayList<String> notifyLandmarks;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -36,8 +39,9 @@ public class GuideMainActivity extends AppCompatActivity {
         selBtn = (Button)findViewById(R.id.guide_selection);
         landmarks = new ArrayList<String>();
         chosenLandmarks = new ArrayList<String>();
-        chosenLandmarksIndex = new int[3];
+        chosenLandmarksIndex = new ArrayList<Integer>();
         landmarkDist = new ArrayList<Double>();
+        notifyLandmarks = new ArrayList<>();
 
     }
 
@@ -83,18 +87,17 @@ public class GuideMainActivity extends AppCompatActivity {
     }
 
     @Override
-    public void onActivityResult(int requestCode, int resultCode, Intent intent){
-        super.onActivityResult(requestCode,resultCode,intent);
+    public void onActivityResult(int requestCode, int resultCode, Intent data){
+        //super.onActivityResult(requestCode,resultCode,data);
         switch (requestCode){
             case (INTEGER_VALUE):{
                 if(resultCode == Activity.RESULT_OK){
-                    Bundle extras = new Bundle();
-                    extras = intent.getExtras();
-                    chosenLandmarks = extras.getStringArrayList("CHOSEN_LANDMARKS");
-                    chosenLandmarksIndex = extras.getIntArray("INDEX");
-                    calculateDistFromChosenLandmarks(53.3458,-6.2789);
-
-
+                    Bundle extras = data.getExtras();
+                    if (extras != null) {
+                        chosenLandmarks = extras.getStringArrayList("CHOSEN_LANDMARKS");
+                        chosenLandmarksIndex = extras.getIntegerArrayList("INDEX");
+                        calculateDistFromChosenLandmarks(53.3458,-6.2789);
+                    }
 
                 }
             }
@@ -109,7 +112,7 @@ public class GuideMainActivity extends AppCompatActivity {
         double landmarkLat;
         double landmarkLong;
         for(int i = 0; i < chosenLandmarks.size(); i++){
-            index = chosenLandmarksIndex[i];
+            index = chosenLandmarksIndex.get(i);
             landmarkLat = allLandmarks.get(index).getLatitude();
             landmarkLong = allLandmarks.get(index).getLongitude();
             dist = Harvesine.calculateDist(guideLat, guideLong, landmarkLat, landmarkLong);
@@ -128,5 +131,12 @@ public class GuideMainActivity extends AppCompatActivity {
     @Subscribe
     public void onPostResponseEvent(ResponseEvent responseEvent){
         Toast.makeText(this, responseEvent.getResponseMessage(), Toast.LENGTH_SHORT).show();
+        /*
+        for(int i =0; i < chosenLandmarks.size(); i++){
+            if(landmarkDist.get(i) <= NOTIFY_DIST){
+
+            }
+        }
+        */
     }
 }
