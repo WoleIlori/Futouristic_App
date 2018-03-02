@@ -69,4 +69,10 @@ public interface ApiInterface {
             @Query("username") String guideUsername
     );
 
+    @GET("touriststatus")
+    Call<TouristStatus> getTouristStatus(
+            @Query("username") String guideUsername
+    );
+
+
 }

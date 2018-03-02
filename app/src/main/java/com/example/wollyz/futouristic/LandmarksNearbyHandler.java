@@ -14,15 +14,19 @@ public class LandmarksNearbyHandler {
     private int[] attractionIndex;
     private NearbyAttraction nearby;
     private final int HEAP_SIZE = 3; //size of k ie. kth nearest attractions
-    private Context c;
     private MaxHeap maxheap;
 
-    public LandmarksNearbyHandler(double latitude, double longitude){
-        this.latitude = latitude;
-        this.longitude = longitude;
+    public LandmarksNearbyHandler(){
         maxheap = new MaxHeap(HEAP_SIZE);
         attractionIndex = new int[HEAP_SIZE + 1];
         nearby = new NearbyAttraction();
+        latitude = 0;
+        longitude = 0;
+    }
+
+    public void setUserLocation(double userLat, double userLong){
+        latitude = userLat;
+        longitude = userLong;
     }
 
     public NearbyAttraction getNearestAttractions(List<Attractions> attractions)
@@ -36,32 +40,30 @@ public class LandmarksNearbyHandler {
         double landmark_long;
 
         //calculating distance between user current location and all attractions
-        System.out.println("distance:");
+        if(latitude !=0 && longitude!=0) {
+            for (int i = 0; i < attractions.size(); i++) {
+                landmark_lat = attractions.get(i).getLatitude();
+                landmark_long = attractions.get(i).getLongitude();
+                distance[i] = Harvesine.calculateDist(latitude, longitude, landmark_lat, landmark_long);
+            }
 
+            //add distance to max heap
+            for (int i = 0; i < distance.length; i++) {
+                maxheap.insert(distance[i], i);
+            }
 
-        for(int i = 0; i < attractions.size(); i++){
-            landmark_lat = attractions.get(i).getLatitude();
-            landmark_long = attractions.get(i).getLongitude();
-            distance[i] = Harvesine.calculateDist(latitude,longitude,landmark_lat,landmark_long);
-            System.out.println(distance[i]);
-        }
+            //get the index of attractions nearby
+            attractionIndex = maxheap.getHeap();
 
-        //add distance to max heap
-        for(int i = 0; i < distance.length; i++){
-            maxheap.insert(distance[i], i);
-        }
+            System.out.println("nearest attractions:");
+            for (int i = 1; i < HEAP_SIZE + 1; i++) {
+                index = attractionIndex[i];
+                name = attractions.get(index).getName();
+                nearby.setAttraction(name);
+                dist = distance[index];
+                nearby.setDistance(dist);
 
-        //get the index of attractions nearby
-        attractionIndex = maxheap.getHeap();
-
-        System.out.println("nearest attractions:");
-        for(int i = 1; i < HEAP_SIZE + 1; i++)
-        {
-            index = attractionIndex[i];
-            name = attractions.get(index).getName();
-            nearby.setAttraction(name);
-            dist = distance[index];
-            nearby.setDistance(dist);
+            }
 
         }
         return nearby;

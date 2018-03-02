@@ -336,4 +336,22 @@ public class ApiClient {
         });
     }
 
+    public void checkTouristStatus(String username){
+        ApiInterface apiService = retrofit.create(ApiInterface.class);
+        Call<TouristStatus> call = apiService.getTouristStatus(username);
+
+        call.enqueue(new Callback<TouristStatus>() {
+            @Override
+            public void onResponse(Call<TouristStatus> call, Response<TouristStatus> response) {
+                BusProvider.getInstance().post(new TouristStatusEvent(response.body()));
+            }
+
+            @Override
+            public void onFailure(Call<TouristStatus> call, Throwable t) {
+                BusProvider.getInstance().post(new ErrorEvent(-2,t.getMessage()));
+
+            }
+        });
+    }
+
 }

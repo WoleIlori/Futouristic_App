@@ -92,4 +92,10 @@ public class LoginActivity extends AppCompatActivity {
 
 
     }
+
+    @Subscribe
+    public void onErrorEvent(ErrorEvent errorEvent){
+        Toast.makeText(this,""+errorEvent.getErrorMsg(),Toast.LENGTH_SHORT).show();
+
+    }
 }

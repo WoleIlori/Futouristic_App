@@ -59,8 +59,7 @@ public class TouristMainActivity extends AppCompatActivity {
         alreadyStartedService = false;
         notify_landmarks = new ArrayList<String>();
         notificationUtils = new NotificationUtils(this);
-        locHandler = new LandmarksNearbyHandler(53.3428,-6.2980);
-        //locHandler = new LandmarksNearbyHandler();
+        locHandler = new LandmarksNearbyHandler();
         client = new ApiClient(this);
         client.getAttractions();
         availableTours = new ArrayList<TourNearby>();
@@ -74,7 +73,6 @@ public class TouristMainActivity extends AppCompatActivity {
     public void onResume(){
         super.onResume();
         BusProvider.getInstance().register(this);
-        checkGooglePlayService();
     }
 
     @Override
@@ -106,22 +104,26 @@ public class TouristMainActivity extends AppCompatActivity {
         }
     }
 
-
-    @Subscribe
-    public void onGetAllAttractionsEvent(AttractionsReceivedEvent serverEvent){
-        attractions = serverEvent.getAttraction();
+    private void callBroadcastManager(){
         LocalBroadcastManager.getInstance(this).registerReceiver(
                 new BroadcastReceiver() {
                     @Override
                     public void onReceive(Context context, Intent intent) {
                         double lat = intent.getDoubleExtra(LocationService.LATITUDE,0);
                         double lng = intent.getDoubleExtra(LocationService.LONGITUDE,0);
+                        locHandler.setUserLocation(lat,lng);
+                        findNearestAttractions();
                         Toast.makeText(getApplicationContext(),"location: "+lat+","+lng,Toast.LENGTH_LONG).show();
 
                     }
                 },new IntentFilter(LocationService.ACTION_LOCATION_BROADCAST)
         );
+    }
 
+    @Subscribe
+    public void onGetAllAttractionsEvent(AttractionsReceivedEvent serverEvent){
+        attractions = serverEvent.getAttraction();
+        callBroadcastManager();
         findTour.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton compoundButton, boolean isChecked) {
@@ -132,12 +134,8 @@ public class TouristMainActivity extends AppCompatActivity {
                     }
                     else {
                         total_people = Integer.parseInt(totalPeople.getText().toString());
-                        /*
-                        nearby = locHandler.getNearestAttractions(attractions);
-                        if(nearby!= null) {
-                            nearby.setUsername(username);
-                            client.postLandmarksNearTourist(nearby);
-                        }*/
+                        checkGooglePlayService();
+
                     }
 
                 }
@@ -156,6 +154,7 @@ public class TouristMainActivity extends AppCompatActivity {
     public void findNearestAttractions(){
         nearby = locHandler.getNearestAttractions(attractions);
         if(nearby!= null) {
+            nearby.setUsername(username);
             client.postLandmarksNearTourist(nearby);
         }
     }
@@ -165,8 +164,16 @@ public class TouristMainActivity extends AppCompatActivity {
     public void onPostNearbyAttractionsEvent(ResponseEvent serverEvent){
         String message = serverEvent.getResponseMessage();
         Toast.makeText(getApplicationContext(), message, Toast.LENGTH_SHORT).show();
-        client.getToursNearby(nearby.getAttractions(),total_people);
+        client.checkTouristStatus(username); //check if tourist is available *NEW
 
+    }
+
+    @Subscribe
+    public void onGetTouristStatusEvent(TouristStatusEvent serverEvent){
+        TouristStatus touristStatus = serverEvent.getTouristStatus();
+        if(touristStatus.getStatus().equals("available")){
+            client.getToursNearby(nearby.getAttractions(),total_people);
+        }
     }
 
     @Subscribe
@@ -174,20 +181,22 @@ public class TouristMainActivity extends AppCompatActivity {
         int error_check = 0; //checks if they were tours sent back from server
         List<TourNearby> returnedTours = event.getToursNearby();
         String tour;
-        for(int i = 0; i < returnedTours.size(); i++){
-            tour = returnedTours.get(i).getLandmark();
-            if(tour.equals(EMPTY_STRING)){
-                error_check += 1;
+        if(returnedTours != null){
+
+            for(int i = 0; i < returnedTours.size(); i++){
+                tour = returnedTours.get(i).getLandmark();
+                if(tour.equals(EMPTY_STRING)){
+                    error_check += 1;
+                }
+                else {
+                    availableTours.add(returnedTours.get(i));
+                }
             }
-            else {
-                availableTours.add(returnedTours.get(i));
+
+            if(error_check != returnedTours.size()){ //check if tourist is already on tour
+                notifyLandmarkToTourist();
             }
         }
-
-        if(error_check != returnedTours.size()){ //check if tourist is already on tour
-            notifyLandmarkToTourist();
-        }
-
 
 
     }
@@ -228,7 +237,7 @@ public class TouristMainActivity extends AppCompatActivity {
     }
 
     private boolean checkLocationPermission(){
-        int finePermissionChk = ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION);
+        int finePermissionChk = ActivityCompat.checkSelfPermission(this,Manifest.permission.ACCESS_FINE_LOCATION);
         int coarsePermissionChk = ActivityCompat.checkSelfPermission(this,Manifest.permission.ACCESS_COARSE_LOCATION);
 
         if(finePermissionChk != PackageManager.PERMISSION_GRANTED && coarsePermissionChk != PackageManager.PERMISSION_GRANTED ) {
@@ -289,20 +298,12 @@ public class TouristMainActivity extends AppCompatActivity {
         String text = availableTours.size() + " tour(s) available near you";
         builder = notificationUtils.createNotification(title, text);
         Intent resultIntent = new Intent(this, NotifyTouristActivity.class);
-        /*
-        Bundle[] extras = new Bundle[availableTours.size()];
-        for(int i = 0; i < extras.length; i++){
-            extras[i].putSerializable("TOUR "+ (i+1), availableTours.get(i));
-            resultIntent.putExtras(extras[i]);
-        }
-        */
+
         Bundle extras = new Bundle();
         for(int i = 0; i < availableTours.size(); i++) {
             extras.putSerializable("TOUR " + (i + 1), availableTours.get(i));
-            //resultIntent.putExtras(extras);
         }
         extras.putInt("TOTAL_PEOPLE",total_people);
-        //extras2.putInt("NO_TOUR", extras.length);
         extras.putInt("NO_TOUR", availableTours.size());
         extras.putString("TOURIST_USERNAME",username);
         resultIntent.putExtras(extras);
