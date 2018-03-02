@@ -10,29 +10,24 @@ import java.util.List;
 public class LandmarksNearbyHandler {
     private double longitude;
     private double latitude;
-    private UserLocationHandler locManager;
     private double[] distance; //distance for attraction
     private int[] attractionIndex;
     private NearbyAttraction nearby;
-    private int heapSize; //size of k ie. kth nearest attractions
+    private final int HEAP_SIZE = 3; //size of k ie. kth nearest attractions
     private Context c;
     private MaxHeap maxheap;
 
-
-
-    LandmarksNearbyHandler(double latitude, double longitude){ //double latitude, double longitude
-        heapSize = 3;
+    public LandmarksNearbyHandler(double latitude, double longitude){
         this.latitude = latitude;
         this.longitude = longitude;
-        maxheap = new MaxHeap(heapSize);
-        attractionIndex = new int[heapSize + 1];
+        maxheap = new MaxHeap(HEAP_SIZE);
+        attractionIndex = new int[HEAP_SIZE + 1];
         nearby = new NearbyAttraction();
     }
 
     public NearbyAttraction getNearestAttractions(List<Attractions> attractions)
     {
-        //latitude = locManager.getUserLatitude();
-        //longitude = locManager.getUserLongitude();
+
         String name;
         double dist;
         distance = new double[attractions.size()];
@@ -60,7 +55,7 @@ public class LandmarksNearbyHandler {
         attractionIndex = maxheap.getHeap();
 
         System.out.println("nearest attractions:");
-        for(int i = 1; i < heapSize + 1; i++)
+        for(int i = 1; i < HEAP_SIZE + 1; i++)
         {
             index = attractionIndex[i];
             name = attractions.get(index).getName();
@@ -72,6 +67,4 @@ public class LandmarksNearbyHandler {
         return nearby;
     }
 
-
-    //tourist_loc.getUserLocation(user);
 }

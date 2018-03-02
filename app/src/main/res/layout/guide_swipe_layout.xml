@@ -2,18 +2,27 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
-
     <TextView
-        android:id="@+id/landmark_tv"
+        android:id="@+id/landmark_name"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         />
 
+    <TextView
+        android:id="@+id/guide_name"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content" />
+
+    <TextView
+        android:id="@+id/tour_price"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content" />
+
+
     <Button
-        android:id="@+id/add_landmark"
+        android:id="@+id/addBtn"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center"
-        android:text="Add"/>
-
+        android:text="@string/tour"/>
 </LinearLayout>

@@ -7,6 +7,7 @@ import retrofit2.http.Body;
 import retrofit2.http.GET;
 import retrofit2.http.Headers;
 import retrofit2.http.POST;
+import retrofit2.http.PUT;
 import retrofit2.http.Query;
 
 /**
@@ -17,22 +18,19 @@ public interface ApiInterface {
     Call<List<Attractions>> doGetAllAttractions();
 
     @Headers("Content-Type: application/json")
-    @POST("nearlandmark")
+    @POST("landmarksnearby")
     Call<String> addNearbyAttractions(@Body Object nearbyAttraction);
-    /*
-    @GET("nearbytourists")
-    Call<List<AmtTouristNearby>> doGetAllTouristNearby(
-            @Query("landmarks[]") List<String> landmarks
-    );
-    */
-    @GET("nearbytourists")
-    Call<List<AmtTouristNearby>> doGetAllTouristNearby(
-            @Query("username") String username
+
+
+    @GET("nearbytour")
+    Call<List<TourNearby>> getToursNearby(
+            @Query("attractions[]") List<String> nearbyLandmarks,
+            @Query("total_people") int total_people
     );
 
     @Headers("Content-Type: application/json")
-    @POST("touristinterest")
-    Call<String> addTouristLandmarkInterest(@Body Object touristInterest);
+    @POST("touristselection")
+    Call<String> addTouristToTourGroup(@Body Object touristInterest);
 
     @GET("touristlogin")
     Call<String> getTouristLoginInfo(
@@ -49,5 +47,26 @@ public interface ApiInterface {
     @Headers("Content-Type: application/json")
     @POST("guideselection")
     Call<String> addGuideLandmarkSelection(@Body Object guideSelection);
+
+    @Headers("Content-Type: application/json")
+    @POST("creategroup")
+    Call<String> createGuideTourGroup(@Body Object landmarkTourGroup);
+
+    @PUT("groupon")
+    Call<String> setGroupToAvailable(
+            @Query("username") String guideUsername,
+            @Query("landmark") String landmark
+    );
+
+    @PUT("groupoff")
+    Call<String> setGroupToUnavailable(
+            @Query("username") String guideUsername,
+            @Query("landmark") String landmark
+    );
+
+    @GET("savedstate")
+    Call<GuideSavedState> getGuideSavedState(
+            @Query("username") String guideUsername
+    );
 
 }

@@ -13,9 +13,15 @@ public class NotifyTouristActivity extends AppCompatActivity {
 
     private ViewPager viewPager;
     private TouristSwipeAdapter swipeAdapter;
-    private ArrayList<String> landmarksToNotify;
-    private ApiClient client;
+    private ArrayList<TourNearby> availableTours;
+    private TourNearby selectedTour;
     private TouristInterest touristInterest;
+    private int size;
+    private ApiClient client;
+    private int total_people;
+    private String tourist_username;
+
+
 
 
     @Override
@@ -23,12 +29,19 @@ public class NotifyTouristActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_notify_tourist);
         client = new ApiClient(this);
+        availableTours = new ArrayList<TourNearby>();
         touristInterest = new TouristInterest();
-        landmarksToNotify = new ArrayList<String>();
-        Bundle var = getIntent().getExtras();
-        landmarksToNotify = var.getStringArrayList("list");
+        size = getIntent().getIntExtra("NO_TOUR",0);
+        tourist_username = getIntent().getStringExtra("TOURIST_USERNAME");
+        total_people = getIntent().getIntExtra("TOTAL_PEOPLE", 0);
+
+        for(int i = 0; i < size; i++){
+            TourNearby g = (TourNearby)getIntent().getSerializableExtra("TOUR "+(i+1));
+            availableTours.add(g);
+        }
+
         viewPager = (ViewPager)findViewById(R.id.view_pager);
-        swipeAdapter = new TouristSwipeAdapter(this,landmarksToNotify);
+        swipeAdapter = new TouristSwipeAdapter(this,availableTours);
         viewPager.setAdapter(swipeAdapter);
 
 
@@ -47,17 +60,19 @@ public class NotifyTouristActivity extends AppCompatActivity {
     }
 
     @Subscribe
-    public void onLandmarkSelectedEvent(UserInterestEvent userInterest){
-        String landmarkChoice = userInterest.getSelectedLandmark();
-        touristInterest.setUsername(MainActivity.username);
-        touristInterest.setLandmark(landmarkChoice);
-        client.postTouristLandmarkChoice(touristInterest);
+    public void onLandmarkSelectedEvent(TouristInterestEvent event){
+        TourNearby selected = event.getSelectedTour();
+        touristInterest.setGuideUsername(selected.getGuideName());
+        touristInterest.setLandmark(selected.getLandmark());
+        touristInterest.setTouristUsername(tourist_username);
+        touristInterest.setTotalPeople(total_people);
+        client.addTouristToTourGroup(touristInterest);
 
     }
 
     @Subscribe
-    public void onPostTouristChoiceEvent(ResponseEvent serverEvent){
-        String message = serverEvent.getResponseMessage() + ": Tourist interest saved";
+    public void onPostTouristInterestEvent(ResponseEvent serverEvent){
+        String message = serverEvent.getResponseMessage() + ": Tourist added to tour group";
         Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
         finish();
     }

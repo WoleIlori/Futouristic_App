@@ -44,8 +44,7 @@ public class GuideLandmarkSelectionActivity extends ListActivity {
         lv.setChoiceMode(lv.CHOICE_MODE_MULTIPLE);
         setListAdapter(new ArrayAdapter<String>(this,
                 android.R.layout.simple_list_item_checked, allLandmarks));
-        //CustomAdapter adapter = new CustomAdapter(this, allLandmarks);
-        //lv.setAdapter(adapter);
+
     }
 
 
@@ -76,7 +75,6 @@ public class GuideLandmarkSelectionActivity extends ListActivity {
             return false;
         }
     }
-
 
 
 }

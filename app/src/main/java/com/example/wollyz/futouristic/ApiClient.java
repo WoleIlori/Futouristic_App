@@ -35,10 +35,12 @@ import retrofit2.converter.gson.GsonConverterFactory;
 /**
  * Created by Wollyz on 01/02/2018.
  */
+//FOR GOOGLE MAP CREATE ANOTHER RETROFIT CLIENT CLASS
+// AFTER RETRIEVING KEY SAVE IN RAW FOLDER
 public class ApiClient {
 
     //netstat -an | find "LISTEN" to find ip address in xampp
-    private static final String BASE_URL = "https://147.252.139.38/futouristicapi/v1/";
+    private static final String BASE_URL = "https://192.168.1.15/futouristicapi/v1/";
 
     private static Retrofit retrofit = null;
     private List<Attractions> attractions;
@@ -166,27 +168,28 @@ public class ApiClient {
         });
     }
 
-    public void getAmtTouristsNearby(String username){
+    public void getToursNearby(List<String> nearbyLandmarks, int total_people){
         ApiInterface apiService = retrofit.create(ApiInterface.class);
-        Call<List<AmtTouristNearby>> call = apiService.doGetAllTouristNearby(username);
+        Call<List<TourNearby>> call = apiService.getToursNearby(nearbyLandmarks, total_people);
 
-        call.enqueue(new Callback<List<AmtTouristNearby>>() {
+        call.enqueue(new Callback<List<TourNearby>>() {
             @Override
-            public void onResponse(Call<List<AmtTouristNearby>> call, Response<List<AmtTouristNearby>> response) {
-                BusProvider.getInstance().post(new TouristAmtEvent(response.body(),response.message()));
+            public void onResponse(Call<List<TourNearby>> call, Response<List<TourNearby>> response) {
+                BusProvider.getInstance().post(new TourNearbyEvent(response.body(),response.message()));
             }
 
             @Override
-            public void onFailure(Call<List<AmtTouristNearby>> call, Throwable t) {
+            public void onFailure(Call<List<TourNearby>> call, Throwable t) {
                 BusProvider.getInstance().post(new ErrorEvent(-2,t.getMessage()));
 
             }
         });
     }
 
-    public void postTouristLandmarkChoice(TouristInterest touristInterest){
+
+    public void addTouristToTourGroup(TouristInterest touristInterest){
         ApiInterface apiService = retrofit.create(ApiInterface.class);
-        Call<String> call = apiService.addTouristLandmarkInterest(touristInterest);
+        Call<String> call = apiService.addTouristToTourGroup(touristInterest);
 
         call.enqueue(new Callback<String>() {
             @Override
@@ -211,7 +214,7 @@ public class ApiClient {
             call.enqueue(new Callback<String>() {
                 @Override
                 public void onResponse(Call<String> call, Response<String> response) {
-                    BusProvider.getInstance().post(new ResponseEvent(response.message()));
+                    BusProvider.getInstance().post(new ResponseEvent(response.body()));
                 }
 
                 @Override
@@ -224,11 +227,10 @@ public class ApiClient {
 
         if(userType == "guide"){
             Call<String> call = apiService.getGuideLoginInfo(username,password);
-
             call.enqueue(new Callback<String>() {
                 @Override
                 public void onResponse(Call<String> call, Response<String> response) {
-                    BusProvider.getInstance().post(new ResponseEvent(response.message()));
+                    BusProvider.getInstance().post(new ResponseEvent(response.body()));
                 }
 
                 @Override
@@ -259,4 +261,79 @@ public class ApiClient {
             }
         });
     }
+
+    public void createGuideTourGroup(TourGroup tourGroup){
+        ApiInterface apiService = retrofit.create(ApiInterface.class);
+        Call<String> call = apiService.createGuideTourGroup(tourGroup);
+
+        call.enqueue(new Callback<String>() {
+            @Override
+            public void onResponse(Call<String> call, Response<String> response) {
+                BusProvider.getInstance().post(new ResponseEvent(response.body()));
+            }
+
+            @Override
+            public void onFailure(Call<String> call, Throwable t) {
+                BusProvider.getInstance().post(new ErrorEvent(-2,t.getMessage()));
+
+            }
+        });
+
+    }
+    public void setGroupToAvailable(String guideUsername, String landmark){
+        ApiInterface apiService = retrofit.create(ApiInterface.class);
+        Call<String> call = apiService.setGroupToAvailable(guideUsername,landmark);
+
+        call.enqueue(new Callback<String>() {
+            @Override
+            public void onResponse(Call<String> call, Response<String> response) {
+                BusProvider.getInstance().post(new ResponseEvent(response.body()));
+            }
+
+            @Override
+            public void onFailure(Call<String> call, Throwable t) {
+                BusProvider.getInstance().post(new ErrorEvent(-2,t.getMessage()));
+
+            }
+        });
+
+    }
+
+    public void setGroupToUnavailable(String guideUsername, String landmark){
+        ApiInterface apiService = retrofit.create(ApiInterface.class);
+        Call<String> call = apiService.setGroupToUnavailable(guideUsername,landmark);
+
+        call.enqueue(new Callback<String>() {
+            @Override
+            public void onResponse(Call<String> call, Response<String> response) {
+                BusProvider.getInstance().post(new ResponseEvent(response.body()));
+            }
+
+            @Override
+            public void onFailure(Call<String> call, Throwable t) {
+                BusProvider.getInstance().post(new ErrorEvent(-2,t.getMessage()));
+
+            }
+        });
+
+    }
+
+    public void getSavedSelection(String guideUsername){
+        ApiInterface apiService = retrofit.create(ApiInterface.class);
+        Call<GuideSavedState> call = apiService.getGuideSavedState(guideUsername);
+
+        call.enqueue(new Callback<GuideSavedState>() {
+            @Override
+            public void onResponse(Call<GuideSavedState> call, Response<GuideSavedState> response) {
+                BusProvider.getInstance().post(new GuideSavedStateEvent(response.body()));
+            }
+
+            @Override
+            public void onFailure(Call<GuideSavedState> call, Throwable t) {
+                BusProvider.getInstance().post(new ErrorEvent(-2,t.getMessage()));
+
+            }
+        });
+    }
+
 }

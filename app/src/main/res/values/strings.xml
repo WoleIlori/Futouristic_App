@@ -9,4 +9,6 @@
     <string name="login">Login</string>
     <string name="tour">Interested</string>
     <string name="title">Tour Notification</string>
+    <string name="permission_rationale">Allow Futouristic to access Location</string>
+
 </resources>

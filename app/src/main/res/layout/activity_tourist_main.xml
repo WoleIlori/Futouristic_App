@@ -9,4 +9,32 @@
     android:paddingTop="@dimen/activity_vertical_margin"
     tools:context="com.example.wollyz.futouristic.TouristMainActivity">
 
+    <android.support.v7.widget.SwitchCompat
+        android:id="@+id/findTour"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Find Tour"
+        android:layout_alignBottom="@+id/total_people"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentEnd="true" />
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/textView3"
+        android:text="Total person(s)"
+        android:inputType="number"
+        android:layout_alignBottom="@+id/total_people"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true" />
+
+    <EditText
+        android:id="@+id/total_people"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:inputType="number"
+        android:layout_alignParentTop="true"
+        android:layout_toRightOf="@+id/textView3"
+        android:layout_toEndOf="@+id/textView3" />
+
+
 </RelativeLayout>

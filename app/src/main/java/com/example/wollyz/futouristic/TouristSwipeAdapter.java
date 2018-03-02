@@ -16,18 +16,18 @@ import java.util.ArrayList;
  */
 public class TouristSwipeAdapter extends PagerAdapter {
     private Context ctx;
-    private ArrayList<String> landmarksToNotify;
+    private ArrayList<TourNearby> availableTours;
     private LayoutInflater layoutInflater;
 
-    public TouristSwipeAdapter(Context ctx, ArrayList<String> landmarksToNotify)
+    public TouristSwipeAdapter(Context ctx, ArrayList<TourNearby> availableTours)
     {
         this.ctx = ctx;
-        this.landmarksToNotify = landmarksToNotify;
+        this.availableTours = availableTours;
     }
 
     @Override
     public int getCount(){
-        return landmarksToNotify.size();
+        return availableTours.size();
     }
 
     @Override
@@ -39,13 +39,22 @@ public class TouristSwipeAdapter extends PagerAdapter {
     public Object instantiateItem(ViewGroup container, final int position){
         layoutInflater = (LayoutInflater)ctx.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         View item_view = layoutInflater.inflate(R.layout.swipe_layout, container, false);
-        TextView textView = (TextView)item_view.findViewById(R.id.textview);
-        textView.setText(landmarksToNotify.get(position));
+
+        TextView landmarkTv = (TextView)item_view.findViewById(R.id.landmark_name);
+        landmarkTv.setText(availableTours.get(position).getLandmark());
+
+        TextView guideTv = (TextView)item_view.findViewById(R.id.guide_name);
+        landmarkTv.setText(availableTours.get(position).getGuideName());
+
+        TextView priceTv = (TextView)item_view.findViewById(R.id.tour_price);
+        landmarkTv.setText(Float.toString(availableTours.get(position).getPrice()));
+
         Button button = (Button)item_view.findViewById(R.id.addBtn);
         button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                BusProvider.getInstance().post(new UserInterestEvent(landmarksToNotify.get(position)));
+
+                BusProvider.getInstance().post(new TouristInterestEvent(availableTours.get(position)));
 
             }
         });

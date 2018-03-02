@@ -23,7 +23,10 @@
         <activity android:name=".LoginActivity" />
         <activity android:name=".TouristMainActivity" />
         <activity android:name=".GuideMainActivity" />
-        <activity android:name=".GuideLandmarkSelectionActivity"></activity>
+        <activity android:name=".GuideLandmarkSelectionActivity" />
+        <activity android:name=".CreateTourGroupActivity"></activity>
+        <service android:name=".LocationService"></service>
+
     </application>
 
 </manifest>
