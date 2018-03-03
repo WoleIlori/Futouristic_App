@@ -36,5 +36,14 @@
         android:layout_toRightOf="@+id/textView3"
         android:layout_toEndOf="@+id/textView3" />
 
+    <Button
+        android:id="@+id/mapBtn"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="View Current Location"
+        android:layout_centerVertical="true"
+        android:layout_toLeftOf="@+id/findTour"
+        android:layout_toStartOf="@+id/findTour" />
+
 
 </RelativeLayout>

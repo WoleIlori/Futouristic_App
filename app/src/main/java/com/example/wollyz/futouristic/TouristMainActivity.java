@@ -15,6 +15,8 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.app.NotificationCompat;
 import android.support.v7.widget.SwitchCompat;
+import android.view.View;
+import android.widget.Button;
 import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.Toast;
@@ -39,6 +41,7 @@ public class TouristMainActivity extends AppCompatActivity {
     private final String EMPTY_STRING = "";
     private NotificationUtils notificationUtils;
     private EditText totalPeople;
+    private Button viewMapBtn;
     private int total_people;
     private List<TourNearby> availableTours;
     private SwitchCompat findTour;
@@ -55,6 +58,7 @@ public class TouristMainActivity extends AppCompatActivity {
         touristUser = getIntent().getExtras().getString("TOURIST_USER");
         totalPeople = (EditText) findViewById(R.id.total_people);
         findTour = (SwitchCompat) findViewById(R.id.findTour);
+        viewMapBtn = (Button)findViewById(R.id.mapBtn);
         nearby = new NearbyAttraction();
         alreadyStartedService = false;
         notify_landmarks = new ArrayList<String>();
@@ -63,10 +67,14 @@ public class TouristMainActivity extends AppCompatActivity {
         client = new ApiClient(this);
         client.getAttractions();
         availableTours = new ArrayList<TourNearby>();
+        viewMapBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent mapIntent = new Intent(view.getContext(), MapsActivity.class);
+                startActivity(mapIntent);
 
-
-
-
+            }
+        });
     }
 
     @Override

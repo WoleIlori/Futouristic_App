@@ -10,5 +10,6 @@
     <string name="tour">Interested</string>
     <string name="title">Tour Notification</string>
     <string name="permission_rationale">Allow Futouristic to access Location</string>
+    <string name="title_activity_maps">Map</string>
 
 </resources>
