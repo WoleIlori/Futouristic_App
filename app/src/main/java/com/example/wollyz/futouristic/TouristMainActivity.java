@@ -15,6 +15,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.app.NotificationCompat;
 import android.support.v7.widget.SwitchCompat;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.CompoundButton;
@@ -26,12 +27,13 @@ import com.google.android.gms.common.GoogleApiAvailability;
 
 import org.greenrobot.eventbus.Subscribe;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
 public class TouristMainActivity extends AppCompatActivity {
     private ApiClient client;
-    private List<Attractions> attractions;
+    public List<Attractions> attractions;
     private NearbyAttraction nearby;
     private LandmarksNearbyHandler locHandler;
     private static final int REQUIRED_AMT = 3;
@@ -43,10 +45,14 @@ public class TouristMainActivity extends AppCompatActivity {
     private EditText totalPeople;
     private Button viewMapBtn;
     private int total_people;
+    private Attractions selectedAttraction;
+    private String guide_username;
     private List<TourNearby> availableTours;
     private SwitchCompat findTour;
     private boolean alreadyStartedService;
     private static final int LOCATION_PERMISSION = 3;
+    private boolean hasLastLocation;
+
 
 
     @Override
@@ -63,14 +69,24 @@ public class TouristMainActivity extends AppCompatActivity {
         alreadyStartedService = false;
         notify_landmarks = new ArrayList<String>();
         notificationUtils = new NotificationUtils(this);
-        locHandler = new LandmarksNearbyHandler();
+        hasLastLocation = false;
         client = new ApiClient(this);
         client.getAttractions();
+        selectedAttraction = new Attractions();
+        guide_username = EMPTY_STRING;
         availableTours = new ArrayList<TourNearby>();
         viewMapBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 Intent mapIntent = new Intent(view.getContext(), MapsActivity.class);
+                if(NotifyTouristActivity.attraction!=null && NotifyTouristActivity.guide_username!=null){
+                    selectedAttraction = NotifyTouristActivity.attraction;
+                    guide_username = NotifyTouristActivity.guide_username;
+                }
+                Bundle extra = new Bundle();
+                extra.putSerializable("SELECTED_LANDMARK",selectedAttraction);
+                extra.putString("GUIDE",guide_username);
+                mapIntent.putExtras(extra);
                 startActivity(mapIntent);
 
             }
@@ -90,10 +106,10 @@ public class TouristMainActivity extends AppCompatActivity {
     }
 
     @Override
-    public void onDestroy(){
+    public void onStop(){
         stopService(new Intent(this,LocationService.class));
         alreadyStartedService = false;
-        super.onDestroy();
+        super.onStop();
     }
 
     public void checkGooglePlayService(){
@@ -104,7 +120,8 @@ public class TouristMainActivity extends AppCompatActivity {
             }
             else
             {
-                requestLocationPermssion();
+                Log.d("Permission", "Requesting Location Permission");
+                requestLocationPermission();
             }
         }
         else{
@@ -119,8 +136,7 @@ public class TouristMainActivity extends AppCompatActivity {
                     public void onReceive(Context context, Intent intent) {
                         double lat = intent.getDoubleExtra(LocationService.LATITUDE,0);
                         double lng = intent.getDoubleExtra(LocationService.LONGITUDE,0);
-                        locHandler.setUserLocation(lat,lng);
-                        findNearestAttractions();
+                        findNearestAttractions(lat,lng);
                         Toast.makeText(getApplicationContext(),"location: "+lat+","+lng,Toast.LENGTH_LONG).show();
 
                     }
@@ -131,6 +147,7 @@ public class TouristMainActivity extends AppCompatActivity {
     @Subscribe
     public void onGetAllAttractionsEvent(AttractionsReceivedEvent serverEvent){
         attractions = serverEvent.getAttraction();
+        locHandler = new LandmarksNearbyHandler(attractions);
         callBroadcastManager();
         findTour.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
@@ -159,8 +176,8 @@ public class TouristMainActivity extends AppCompatActivity {
 
     }
 
-    public void findNearestAttractions(){
-        nearby = locHandler.getNearestAttractions(attractions);
+    public void findNearestAttractions(double userLat,double userLong){
+        nearby = locHandler.getNearestAttractions(userLat,userLong);
         if(nearby!= null) {
             nearby.setUsername(username);
             client.postLandmarksNearTourist(nearby);
@@ -170,6 +187,7 @@ public class TouristMainActivity extends AppCompatActivity {
 
     @Subscribe
     public void onPostNearbyAttractionsEvent(ResponseEvent serverEvent){
+
         String message = serverEvent.getResponseMessage();
         Toast.makeText(getApplicationContext(), message, Toast.LENGTH_SHORT).show();
         client.checkTouristStatus(username); //check if tourist is available *NEW
@@ -201,27 +219,11 @@ public class TouristMainActivity extends AppCompatActivity {
                 }
             }
 
-            if(error_check != returnedTours.size()){ //check if tourist is already on tour
+
+            if(error_check != returnedTours.size()){
                 notifyLandmarkToTourist();
             }
         }
-
-
-    }
-
-    @Override
-    public void onRequestPermissionsResult(int requestCode, String permissions[], int[] grantResults)
-    {
-        switch (requestCode){
-            case LOCATION_PERMISSION:{
-                if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    startLocationService();
-                } else {
-
-                }
-            }
-        }
-
 
 
     }
@@ -241,6 +243,7 @@ public class TouristMainActivity extends AppCompatActivity {
             }
             return false;
         }
+        Log.d("Permission", "Google Service Available");
         return true;
     }
 
@@ -251,19 +254,43 @@ public class TouristMainActivity extends AppCompatActivity {
         if(finePermissionChk != PackageManager.PERMISSION_GRANTED && coarsePermissionChk != PackageManager.PERMISSION_GRANTED ) {
             return false;
         }
+        Log.d("Permission", "Location permission granted");
         return true;
 
     }
 
-    private void requestLocationPermssion(){
+    private void requestLocationPermission(){
+        Log.d("Permission", "Calling Permission");
         boolean provideRationale1 = ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.ACCESS_FINE_LOCATION);
         boolean provideRationale2 =  ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.ACCESS_COARSE_LOCATION);
-
+        /*
         if(provideRationale1 || provideRationale2){
+
             createDialog(R.string.permission_rationale);
+        }
+        */
+        ActivityCompat.requestPermissions(TouristMainActivity.this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION}, LOCATION_PERMISSION);
+
+
+    }
+
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String permissions[], int[] grantResults)
+    {
+        switch (requestCode){
+            case LOCATION_PERMISSION:{
+                if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    Log.d("Permission", "Starting tracking service");
+                    startLocationService();
+                } else {
+
+                }
+            }
         }
 
     }
+
 
     private void createDialog(final int textStringId) {
         DialogInterface.OnClickListener dialogClickListener = new DialogInterface.OnClickListener() {
@@ -293,6 +320,7 @@ public class TouristMainActivity extends AppCompatActivity {
 
     private void startLocationService(){
         if(!alreadyStartedService){
+            LocationService.setActivityContext(this);
             Intent intent = new Intent(this, LocationService.class);
             startService(intent);
             alreadyStartedService = true;
@@ -314,6 +342,7 @@ public class TouristMainActivity extends AppCompatActivity {
         extras.putInt("TOTAL_PEOPLE",total_people);
         extras.putInt("NO_TOUR", availableTours.size());
         extras.putString("TOURIST_USERNAME",username);
+        extras.putSerializable("ALL_LANDMARKS",(Serializable)attractions);
         resultIntent.putExtras(extras);
 
         //TaskStackBuilder stackBuilder = TaskStackBuilder.create(this);
@@ -325,7 +354,11 @@ public class TouristMainActivity extends AppCompatActivity {
                 PendingIntent.FLAG_UPDATE_CURRENT);
         builder.setContentIntent(contentIntent);
         notificationUtils.notifyTourist(notificationID, builder);
+
     }
+
+    //getting landmark tourist is interested in
+
 
 
 }

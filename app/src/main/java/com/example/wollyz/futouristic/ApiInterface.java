@@ -71,8 +71,19 @@ public interface ApiInterface {
 
     @GET("touriststatus")
     Call<TouristStatus> getTouristStatus(
-            @Query("username") String guideUsername
+            @Query("username") String touristUsername
     );
 
+    @PUT("updatelocation")
+    Call<String> updateTouristLocation(
+            @Query("attractions[]") List<String> nearbyLandmarks,
+            @Query("distances[]") List<Double> distances,
+            @Query("username") String username
+    );
+
+    @GET("guidelocation")
+    Call<GuideLocation> getGuideLocation(
+            @Query("username") String guideUsername
+    );
 
 }

@@ -6,13 +6,22 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
+import android.graphics.Color;
 import android.location.Location;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
 import android.support.v4.content.LocalBroadcastManager;
+import android.support.v7.app.AppCompatActivity;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.widget.Toast;
 
+import com.example.wollyz.futouristic.MapsPOJO.Main;
+import com.example.wollyz.futouristic.MapsPOJO.Route;
+import com.example.wollyz.futouristic.MapsPOJO.RouteEvent;
+import com.example.wollyz.futouristic.MapsPOJO.Step;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
 import com.google.android.gms.maps.CameraUpdateFactory;
@@ -23,14 +32,30 @@ import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.gms.maps.model.PolylineOptions;
+import com.google.maps.android.PolyUtil;
 
-public class MapsActivity extends FragmentActivity implements OnMapReadyCallback {
+import org.greenrobot.eventbus.Subscribe;
+
+import java.util.ArrayList;
+import java.util.List;
+
+public class MapsActivity extends AppCompatActivity implements OnMapReadyCallback
+{
     private GoogleMap mMap;
     private static final int LOCATION_REQUEST_CODE = 99;
     private boolean alreadyStartedService;
     private Location mLastLocation;
     private Marker mCurrLocationMarker;
-
+    private Marker mTourLocationMarker;
+    private Marker mGuideLocationMarker;
+    private Attractions landmark;
+    private GoogleMapsApiClient googleClient;
+    private ApiClient apiClient;
+    private String origin;
+    private String destination;
+    private String guide_username;
+    private final String EMPTY_STRING = "";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -40,28 +65,86 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
+        googleClient = new GoogleMapsApiClient();
+        apiClient = new ApiClient(this);
+        origin = EMPTY_STRING;
+        destination = EMPTY_STRING;
+        landmark = (Attractions) getIntent().getSerializableExtra("SELECTED_LANDMARK");
+        guide_username = getIntent().getStringExtra("GUIDE");
         mLastLocation = new Location("");
         alreadyStartedService = false;
         callBroadcastManager();
     }
 
     @Override
-    public void onStart(){
-        super.onStart();
+    public boolean onCreateOptionsMenu(Menu menu){
+        MenuInflater menuInflater = getMenuInflater();
+        menuInflater.inflate(R.menu.map_menu, menu);
+        return true;
+    }
+
+    @SuppressWarnings("deprecation")
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item){
+        switch (item.getItemId()){
+            case R.id.get_directions:{
+                if(origin.matches(EMPTY_STRING) && destination.matches(EMPTY_STRING)){
+                    Toast.makeText(getApplicationContext(),"No tour selected",Toast.LENGTH_SHORT).show();
+                }
+                else
+                {
+                    googleClient.getMapDirections(origin,destination);
+                }
+                return true;
+            }
+            case R.id.guide_location:{
+                if(destination.matches(EMPTY_STRING)){
+                    Toast.makeText(getApplicationContext(),"No tour selected",Toast.LENGTH_SHORT).show();
+                }
+                else{
+                    apiClient.getGuideCurrentLocation(guide_username);
+                }
+                return true;
+            }
+
+        }
+        return super.onOptionsItemSelected(item);
+    }
 
 
-
+    @Override
+    public void onResume(){
+        super.onResume();
+        BusProvider.getInstance().register(this);
     }
 
 
     @Override
     public void onStop(){
-        super.onStop();
-
         stopService(new Intent(this,LocationService.class));
         alreadyStartedService = false;
+        BusProvider.getInstance().unregister(this);
+        super.onStop();
     }
 
+
+    private void createLandmarkMarker(){
+
+        if(mTourLocationMarker != null){
+            mTourLocationMarker.remove();
+        }
+
+        if(!landmark.getName().matches(EMPTY_STRING)){
+            LatLng latLng =new LatLng(landmark.getLatitude(),landmark.getLongitude());
+            MarkerOptions markerOptions = new MarkerOptions()
+                    .position(latLng)
+                    .title("Tour is here")
+                    .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED));
+            mTourLocationMarker = mMap.addMarker(markerOptions);
+            destination = landmark.getLatitude()+","+landmark.getLongitude();
+        }
+
+    }
 
     private void callBroadcastManager(){
         LocalBroadcastManager.getInstance(this).registerReceiver(
@@ -70,31 +153,45 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     public void onReceive(Context context, Intent intent) {
                         double lat = intent.getDoubleExtra(LocationService.LATITUDE,0);
                         double lng = intent.getDoubleExtra(LocationService.LONGITUDE,0);
-                        updateLocationOnMap(lat,lng);
+                        updateCurrentLocation(lat,lng);
+                        if(mTourLocationMarker == null){
+                            createLandmarkMarker();
+                        }
                     }
                 },new IntentFilter(LocationService.ACTION_LOCATION_BROADCAST)
         );
     }
 
-    private void updateLocationOnMap(double lat, double lng){
+    private void updateCurrentLocation(double lat, double lng){
 
         mLastLocation.setLatitude(lat);
         mLastLocation.setLongitude(lng);
-
-        if(mCurrLocationMarker != null){
+        if(mCurrLocationMarker!=null){
             mCurrLocationMarker.remove();
         }
-        LatLng latLng =new LatLng(lat,lng);
+        origin = lat+","+lng;
+        LatLng latLng = new LatLng(lat,lng);
+
         MarkerOptions markerOptions = new MarkerOptions()
                 .position(latLng)
                 .title("You are here")
                 .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE));
         mCurrLocationMarker = mMap.addMarker(markerOptions);
-
         mMap.moveCamera(CameraUpdateFactory.newLatLng(latLng));
-        mMap.animateCamera(CameraUpdateFactory.zoomTo(10));
+        mMap.animateCamera(CameraUpdateFactory.zoomTo(11));
+        /*
+        if(mTourLocationMarker != null){
+            client.getMapDirections(origin,destination);
+        }
+        */
+
+
         stopService(new Intent(this,LocationService.class));
         alreadyStartedService = false;
+
+    }
+
+    public void drawRouteToTour(){
 
     }
     public void checkGooglePlayService(){
@@ -106,7 +203,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             }
             else
             {
-                ActivityCompat.requestPermissions(MapsActivity.this, new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION, android.Manifest.permission.ACCESS_COARSE_LOCATION}, LOCATION_REQUEST_CODE);
+                ActivityCompat.requestPermissions(MapsActivity.this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION}, LOCATION_REQUEST_CODE);
             }
         }
         else{
@@ -127,8 +224,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     }
 
     private boolean checkLocationPermission(){
-        int finePermissionChk = ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION);
-        int coarsePermissionChk = ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_COARSE_LOCATION);
+        int finePermissionChk = ActivityCompat.checkSelfPermission(this,Manifest.permission.ACCESS_FINE_LOCATION);
+        int coarsePermissionChk = ActivityCompat.checkSelfPermission(this,Manifest.permission.ACCESS_COARSE_LOCATION);
 
         if(finePermissionChk != PackageManager.PERMISSION_GRANTED && coarsePermissionChk != PackageManager.PERMISSION_GRANTED ) {
             return false;
@@ -138,7 +235,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     }
 
     private void startLocationService(){
-        if(!alreadyStartedService){
+        if(alreadyStartedService == false){
             Intent intent = new Intent(this, LocationService.class);
             startService(intent);
             alreadyStartedService = true;
@@ -177,10 +274,59 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 }
             }
         }
-
-
-
     }
 
+
+    @Subscribe
+    public void onGetGuideLocationEvent(GuideLocationEvent server){
+        GuideLocation guideLocation = server.getGuideLocation();
+        createGuideMarker(guideLocation.getLatitude(),guideLocation.getLongitude());
+    }
+
+    public void createGuideMarker(double lat, double lng){
+        LatLng latLng =new LatLng(landmark.getLatitude(),landmark.getLongitude());
+        MarkerOptions markerOptions = new MarkerOptions()
+                .position(latLng)
+                .title("Guide is here")
+                .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED));
+
+        if(mTourLocationMarker!=null){
+            mCurrLocationMarker.remove();
+        }
+        mGuideLocationMarker = mMap.addMarker(markerOptions);
+    }
+    @Subscribe
+    public void onGetMapDirectionEvent(RouteEvent googleResponse){
+        ArrayList<LatLng> routelist = new ArrayList<LatLng>();
+        Main directionResults = googleResponse.getDirections();
+        if(directionResults.getRoutes().size() > 0){
+            List<LatLng> decodelist;
+            Route routeA = directionResults.getRoutes().get(0);
+            if(routeA.getLegs().size()>0){
+                List<Step> steps = routeA.getLegs().get(0).getSteps();
+                Step step;
+                //Location location;
+                String polyline;
+                for(int i=0; i < steps.size(); i++){
+                    step = steps.get(i);
+                    routelist.add(new LatLng(step.getStartLocation().getLat(),step.getStartLocation().getLng()));
+                    polyline = step.getPolyline().getPoints();
+                    decodelist = PolyUtil.decode(polyline);
+                    routelist.addAll(decodelist);
+                    routelist.add(new LatLng(step.getEndLocation().getLat(),step.getEndLocation().getLng()));
+
+                }
+            }
+        }
+        if(routelist.size() > 0){
+            PolylineOptions rectline = new PolylineOptions().width(10).color(Color.RED);
+            for(int i =0; i < routelist.size(); i++){
+                rectline.add(routelist.get(i));
+            }
+            mMap.addPolyline(rectline);
+            createLandmarkMarker();
+        }
+
+    }
 
 }

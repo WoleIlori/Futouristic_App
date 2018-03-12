@@ -3,10 +3,12 @@ package com.example.wollyz.futouristic;
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 
+import java.io.Serializable;
+
 /**
  * Created by Wollyz on 01/02/2018.
  */
-public class Attractions {
+public class Attractions implements Serializable {
     @SerializedName("name")
     @Expose
     private String name;
@@ -18,6 +20,13 @@ public class Attractions {
     @SerializedName("longitude")
     @Expose
     private Double longitude;
+
+    public Attractions(){
+        name = "";
+        latitude = 0.0;
+        longitude = 0.0;
+
+    }
 
     public String getName()
     {
@@ -33,6 +42,7 @@ public class Attractions {
     {
         return longitude;
     }
+
 
 
 

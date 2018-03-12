@@ -1,5 +1,7 @@
 package com.example.wollyz.futouristic;
 
+import java.util.Arrays;
+
 /**
  * Created by Wollyz on 01/02/2018.
  */
@@ -10,6 +12,7 @@ public class MaxHeap {
     private int size;
     private static final int ROOT = 1;
     private boolean notFull;
+    private boolean reset;
     private int equalNodes; //used to check if subtrees have equal children
 
     MaxHeap(int maxSize)
@@ -21,6 +24,7 @@ public class MaxHeap {
         distPos = new int[maxSize+ 1];
         heap[0] = Double.MAX_VALUE;
         distPos[0] = Integer.MAX_VALUE;
+        reset = false;
     }
 
     //parent index
@@ -91,6 +95,12 @@ public class MaxHeap {
 
     }
 
+    public void EmptyHeap(){
+        Arrays.fill(heap,0);
+        heap[0] = Double.MAX_VALUE;
+
+
+    }
     public void heapifyUp(int pos){
         int current = pos;
         while(heap[current] > heap[parent(current)]){

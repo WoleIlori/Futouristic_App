@@ -4,6 +4,7 @@ import android.Manifest;
 import android.app.Activity;
 import android.app.Service;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.Location;
@@ -15,6 +16,8 @@ import android.provider.Settings;
 import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.LocalBroadcastManager;
+import android.support.v7.app.AlertDialog;
+import android.util.Log;
 import android.widget.Toast;
 
 import com.google.android.gms.common.ConnectionResult;
@@ -30,16 +33,19 @@ import java.util.List;
 public class LocationService extends Service implements
         GoogleApiClient.ConnectionCallbacks,GoogleApiClient.OnConnectionFailedListener, com.google.android.gms.location.LocationListener{
 
-    private static final int INTERVAL = 30000;
-    private static final int FASTEST_INTERVAL = 60000;
+    private static final int INTERVAL = 120000;
+    private static final int FASTEST_INTERVAL = 90000;
     public static final String ACTION_LOCATION_BROADCAST = LocationService.class.getName()+"LocationBroadcast";
     public static final String LATITUDE = "latitude";
     public static final String LONGITUDE = "longitude";
+    private static Activity activityContext;
     private GoogleApiClient locationClient;
     private LocationRequest locationRequest;
+    private static final int LOCATION_PERMISSION = 5;
 
     @Override
     public int onStartCommand(Intent intent,int flags, int startId){
+        Log.d("Location Tracker", "Service Started");
         locationClient = new GoogleApiClient.Builder(this)
                 .addConnectionCallbacks(this)
                 .addOnConnectionFailedListener(this)
@@ -63,6 +69,7 @@ public class LocationService extends Service implements
 
     @Override
     public void onConnected(Bundle dataBundle){
+        Log.d("Location Tracker", "Service Connected");
         int finePermissionChk = ActivityCompat.checkSelfPermission(this,Manifest.permission.ACCESS_FINE_LOCATION);
         int coarsePermissionChk = ActivityCompat.checkSelfPermission(this,Manifest.permission.ACCESS_COARSE_LOCATION);
 
@@ -70,9 +77,36 @@ public class LocationService extends Service implements
             //requestPermission(new String[]{Manifest.permission.ACCESS_COARSE_LOCATION,Manifest.permission.ACCESS_FINE_LOCATION},LOCATION_REQUEST_CODE);
             return;
         }
+        Log.d("Location Tracker", "Enable tracker");
         LocationServices.FusedLocationApi.requestLocationUpdates(locationClient,locationRequest,this);
     }
 
+
+    private void createDialog(final int textStringId) {
+        DialogInterface.OnClickListener dialogClickListener = new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int which) {
+                switch (which) {
+                    case DialogInterface.BUTTON_POSITIVE: {
+                        ActivityCompat.requestPermissions(activityContext, new String[]{Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION}, LOCATION_PERMISSION);
+                        dialogInterface.dismiss();
+                        break;
+                    }
+                    case DialogInterface.BUTTON_NEGATIVE: {
+                        dialogInterface.dismiss();
+                        break;
+                    }
+                }
+
+            }
+        };
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setMessage(textStringId).setPositiveButton("Yes",dialogClickListener)
+                .setNegativeButton("No",dialogClickListener);
+        AlertDialog alert = builder.create();
+        alert.show();
+    }
 
     @Override
     public void onConnectionSuspended(int i){
@@ -96,6 +130,11 @@ public class LocationService extends Service implements
     public void onConnectionFailed(ConnectionResult connectionResult){
 
     }
+
+    public static void setActivityContext(Activity activtyContext){
+        activityContext = activtyContext;
+    }
+
 
 
 }

@@ -40,7 +40,7 @@ import retrofit2.converter.gson.GsonConverterFactory;
 public class ApiClient {
 
     //netstat -an | find "LISTEN" to find ip address in xampp
-    private static final String BASE_URL = "https://192.168.1.15/futouristicapi/v1/";
+    private static final String BASE_URL = "https://147.252.142.56/futouristicapi/v1/";
 
     private static Retrofit retrofit = null;
     private List<Attractions> attractions;
@@ -152,12 +152,13 @@ public class ApiClient {
 
 
         ApiInterface apiService = retrofit.create(ApiInterface.class);
+
         Call<String> call = apiService.addNearbyAttractions(nearby);
 
         call.enqueue(new Callback<String>() {
             @Override
             public void onResponse(Call<String> call, Response<String> response) {
-                BusProvider.getInstance().post(new ResponseEvent(response.message()));
+                BusProvider.getInstance().post(new ResponseEvent(response.body()));
             }
 
             @Override
@@ -166,7 +167,29 @@ public class ApiClient {
 
             }
         });
+
+    /*
+        else
+        {
+            Call<String> call = apiService.updateTouristLocation(nearby.getAttractions(),nearby.getDistances(),nearby.getUsername());
+            call.enqueue(new Callback<String>() {
+                @Override
+                public void onResponse(Call<String> call, Response<String> response) {
+                    BusProvider.getInstance().post(new ResponseEvent(response.message()));
+                }
+
+                @Override
+                public void onFailure(Call<String> call, Throwable t) {
+                    BusProvider.getInstance().post(new ErrorEvent(-2,t.getMessage()));
+
+                }
+            });
+        }
+        */
+
+
     }
+
 
     public void getToursNearby(List<String> nearbyLandmarks, int total_people){
         ApiInterface apiService = retrofit.create(ApiInterface.class);
@@ -348,6 +371,24 @@ public class ApiClient {
 
             @Override
             public void onFailure(Call<TouristStatus> call, Throwable t) {
+                BusProvider.getInstance().post(new ErrorEvent(-2,t.getMessage()));
+
+            }
+        });
+    }
+
+    public void getGuideCurrentLocation(String guide_username){
+        ApiInterface apiService = retrofit.create(ApiInterface.class);
+        Call<GuideLocation> call = apiService.getGuideLocation(guide_username);
+
+        call.enqueue(new Callback<GuideLocation>() {
+            @Override
+            public void onResponse(Call<GuideLocation> call, Response<GuideLocation> response) {
+                BusProvider.getInstance().post(new GuideLocationEvent(response.body()));
+            }
+
+            @Override
+            public void onFailure(Call<GuideLocation> call, Throwable t) {
                 BusProvider.getInstance().post(new ErrorEvent(-2,t.getMessage()));
 
             }
