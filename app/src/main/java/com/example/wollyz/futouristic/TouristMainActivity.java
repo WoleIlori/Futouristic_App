@@ -44,6 +44,7 @@ public class TouristMainActivity extends AppCompatActivity {
     private NotificationUtils notificationUtils;
     private EditText totalPeople;
     private Button viewMapBtn;
+    private Button leaveTourBtn;
     private int total_people;
     private Attractions selectedAttraction;
     private String guide_username;
@@ -65,6 +66,7 @@ public class TouristMainActivity extends AppCompatActivity {
         totalPeople = (EditText) findViewById(R.id.total_people);
         findTour = (SwitchCompat) findViewById(R.id.findTour);
         viewMapBtn = (Button)findViewById(R.id.mapBtn);
+        leaveTourBtn = (Button)findViewById(R.id.leaveTourBtn);
         nearby = new NearbyAttraction();
         alreadyStartedService = false;
         notify_landmarks = new ArrayList<String>();
@@ -91,25 +93,33 @@ public class TouristMainActivity extends AppCompatActivity {
 
             }
         });
+        leaveTourBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                selectedAttraction = NotifyTouristActivity.attraction;
+                if(selectedAttraction.getName().matches(EMPTY_STRING)){
+                    Toast.makeText(getApplicationContext(), "You have not joined a tour", Toast.LENGTH_SHORT).show();
+                }
+                else {
+                    createDialog(R.string.alert,"Leave Tour");
+                }
+            }
+        });
     }
 
     @Override
     public void onResume(){
         super.onResume();
         BusProvider.getInstance().register(this);
+        checkGooglePlayService();
     }
 
     @Override
     public void onPause(){
         super.onPause();
         BusProvider.getInstance().unregister(this);
-    }
-
-    @Override
-    public void onStop(){
         stopService(new Intent(this,LocationService.class));
         alreadyStartedService = false;
-        super.onStop();
     }
 
     public void checkGooglePlayService(){
@@ -266,7 +276,7 @@ public class TouristMainActivity extends AppCompatActivity {
         /*
         if(provideRationale1 || provideRationale2){
 
-            createDialog(R.string.permission_rationale);
+            createDialog(R.string.permission_rationale, "permission");
         }
         */
         ActivityCompat.requestPermissions(TouristMainActivity.this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION}, LOCATION_PERMISSION);
@@ -292,13 +302,22 @@ public class TouristMainActivity extends AppCompatActivity {
     }
 
 
-    private void createDialog(final int textStringId) {
+    private void createDialog(final int textStringId,final String type) {
         DialogInterface.OnClickListener dialogClickListener = new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialogInterface, int which) {
                 switch (which) {
                     case DialogInterface.BUTTON_POSITIVE: {
-                        ActivityCompat.requestPermissions(TouristMainActivity.this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION}, LOCATION_PERMISSION);
+                        switch(type){
+                            case "Permission":{
+                                ActivityCompat.requestPermissions(TouristMainActivity.this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION}, LOCATION_PERMISSION);
+                                break;
+                            }
+                            case "Leave Tour":{
+                                client.removeTouristFromTour(username);
+                                break;
+                            }
+                        }
                         dialogInterface.dismiss();
                         break;
                     }
@@ -320,10 +339,11 @@ public class TouristMainActivity extends AppCompatActivity {
 
     private void startLocationService(){
         if(!alreadyStartedService){
-            LocationService.setActivityContext(this);
+            //LocationService.setActivityContext(this);
             Intent intent = new Intent(this, LocationService.class);
             startService(intent);
             alreadyStartedService = true;
+            Log.d("TRACKING","Location tracking enabled...");
         }
     }
 
@@ -356,8 +376,6 @@ public class TouristMainActivity extends AppCompatActivity {
         notificationUtils.notifyTourist(notificationID, builder);
 
     }
-
-    //getting landmark tourist is interested in
 
 
 

@@ -14,6 +14,7 @@ import android.widget.Toast;
 
 import org.greenrobot.eventbus.Subscribe;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -30,6 +31,7 @@ public class GuideMainActivity extends AppCompatActivity {
     private Button selBtn;
     private final String EMPTY_STRING = "";
     private Button groupCreateBtn;
+    private Button viewGroupBtn;
     private final int REQUEST_CODE_LIST = 1;
     private final int REQUEST_CODE_FORM = 2;
     private ArrayList<String> chosenLandmarks;
@@ -40,6 +42,7 @@ public class GuideMainActivity extends AppCompatActivity {
     private String tourLandmark; //stores landmark guide decides to do
     private Intent listIntent;
     private Intent formIntent;
+    private String status;
 
 
     @Override
@@ -47,12 +50,12 @@ public class GuideMainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_guide_main);
         Toast.makeText(this, "this is guide main page", Toast.LENGTH_SHORT).show();
-        //gpsHandler = new UserLocationHandler(this,guideUser);
         client = new ApiClient(this);
         username = getIntent().getExtras().getString("USERNAME");
         guideUser = getIntent().getExtras().getString("GUIDE_USER");
         selBtn = (Button)findViewById(R.id.guide_selection);
         groupCreateBtn = (Button) findViewById(R.id.createGroup);
+        viewGroupBtn = (Button)findViewById(R.id.viewGroupBtn);
         tourToggle = (SwitchCompat) findViewById(R.id.tourToggle);
         landmarks = new ArrayList<String>();
         chosenLandmarks = new ArrayList<String>();
@@ -61,7 +64,68 @@ public class GuideMainActivity extends AppCompatActivity {
         listIntent = new Intent(this, GuideLandmarkSelectionActivity.class);
         formIntent = new Intent(this, CreateTourGroupActivity.class);
         tourLandmark = "";
+        status = "";
         client.getSavedSelection(username);
+
+        tourToggle.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton compoundButton, boolean isChecked) {
+                if(isChecked){
+                    //if Guide toggles but has not selected landmarks
+                    if(tourLandmark == EMPTY_STRING){
+                        Toast.makeText(getApplicationContext(), "Please select landmarks and create a tour group", Toast.LENGTH_SHORT).show();
+                        compoundButton.toggle();
+                    }
+                    else
+                    {
+
+                        //set tour group in database to available
+                        if(status != "available"){
+                            client.setGroupToAvailable(username,tourLandmark);
+                        }
+
+                    }
+
+                }
+                else {
+                    if (tourLandmark != EMPTY_STRING) {
+                        alertUser();
+
+                    }
+
+                }
+            }
+        });
+
+        selBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if(allLandmarks.size()>0){
+                    Bundle extras_list = new Bundle();
+                    extras_list.putStringArrayList("LANDMARKS", landmarks);
+                    listIntent.putExtras(extras_list);
+                    startActivityForResult(listIntent,REQUEST_CODE_LIST);
+                }
+                else
+                {
+                    Toast.makeText(getApplicationContext(), "Retrieving all attractions", Toast.LENGTH_SHORT).show();
+                }
+
+            }
+        });
+
+        viewGroupBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if(tourLandmark.matches(EMPTY_STRING)){
+                    Toast.makeText(getApplicationContext(), "No tour group have been created", Toast.LENGTH_SHORT).show();
+                }
+                else {
+                    //call api to retireve status
+                    client.getGroupStatus(username,tourLandmark);
+                }
+            }
+        });
 
 
 
@@ -90,6 +154,7 @@ public class GuideMainActivity extends AppCompatActivity {
             landmarkName = allLandmarks.get(i).getName();
             landmarks.add(landmarkName);
         }
+        /*
         tourToggle.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton compoundButton, boolean isChecked) {
@@ -103,6 +168,7 @@ public class GuideMainActivity extends AppCompatActivity {
                     {
                         //set tour group in database to available
                         client.setGroupToAvailable(username,tourLandmark);
+
                     }
 
                 }
@@ -117,18 +183,20 @@ public class GuideMainActivity extends AppCompatActivity {
 
 
             }
+
         });
 
         selBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Bundle extras_list = new Bundle();
-                extras_list.putStringArrayList("LANDMARKS", landmarks);
-                listIntent.putExtras(extras_list);
+                    Bundle extras_list = new Bundle();
+                    extras_list.putStringArrayList("LANDMARKS", landmarks);
+                    listIntent.putExtras(extras_list);
 
                 startActivityForResult(listIntent,REQUEST_CODE_LIST);
             }
         });
+        */
 
 
     }
@@ -155,7 +223,6 @@ public class GuideMainActivity extends AppCompatActivity {
             case (REQUEST_CODE_FORM):{
                 if(resultCode == Activity.RESULT_OK){
                     tourLandmark = data.getStringExtra("TOUR_LANDMARK");
-                    Toast.makeText(getApplicationContext(), "form completed", Toast.LENGTH_SHORT).show();
 
                 }
                 break;
@@ -240,7 +307,18 @@ public class GuideMainActivity extends AppCompatActivity {
         GuideSavedState guideSavedState = event.getSavedState();
         chosenLandmarks = (ArrayList<String>) guideSavedState.getGuidesList();
         tourLandmark = guideSavedState.getTour();
+        status = guideSavedState.getStatus();
         client.getAttractions();
+    }
+
+    @Subscribe
+    public  void onGetTourGroupStatusEvent(TourGroupStatusEvent event){
+        TourGroupStatus groupStatus = event.getGroupStatus();
+        Intent groupStatusIntent = new Intent(this, TourGroupStatusActivity.class);
+        groupStatusIntent.putExtra("GROUP_STATUS", (Serializable)groupStatus);
+        groupStatusIntent.putExtra("GUIDE_1",username);
+        startActivity(groupStatusIntent);
+
     }
 
     @Subscribe
@@ -248,5 +326,4 @@ public class GuideMainActivity extends AppCompatActivity {
         Toast.makeText(this,""+errorEvent.getErrorMsg(),Toast.LENGTH_SHORT).show();
 
     }
-
 }

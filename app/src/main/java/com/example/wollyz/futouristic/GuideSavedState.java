@@ -15,6 +15,9 @@ public class GuideSavedState {
     @SerializedName("tour")
     @Expose
     private String tour;
+    @SerializedName("status")
+    @Expose
+    private String status;
 
     public List<String> getGuidesList() {
         return guidesList;
@@ -30,5 +33,13 @@ public class GuideSavedState {
 
     public void setTour(String tour) {
         this.tour = tour;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
     }
 }

@@ -41,9 +41,20 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="View Current Location"
-        android:layout_centerVertical="true"
+        android:layout_below="@+id/leaveTourBtn"
         android:layout_toLeftOf="@+id/findTour"
-        android:layout_toStartOf="@+id/findTour" />
+        android:layout_toStartOf="@+id/findTour"
+        android:layout_marginTop="66dp" />
+
+    <Button
+        android:id="@+id/leaveTourBtn"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Leave Current Tour"
+        android:layout_marginTop="127dp"
+        android:layout_below="@+id/textView3"
+        android:layout_alignRight="@+id/mapBtn"
+        android:layout_alignEnd="@+id/mapBtn" />
 
 
 </RelativeLayout>

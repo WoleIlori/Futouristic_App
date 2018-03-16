@@ -38,7 +38,6 @@ public class LocationService extends Service implements
     public static final String ACTION_LOCATION_BROADCAST = LocationService.class.getName()+"LocationBroadcast";
     public static final String LATITUDE = "latitude";
     public static final String LONGITUDE = "longitude";
-    private static Activity activityContext;
     private GoogleApiClient locationClient;
     private LocationRequest locationRequest;
     private static final int LOCATION_PERMISSION = 5;
@@ -81,7 +80,7 @@ public class LocationService extends Service implements
         LocationServices.FusedLocationApi.requestLocationUpdates(locationClient,locationRequest,this);
     }
 
-
+    /*
     private void createDialog(final int textStringId) {
         DialogInterface.OnClickListener dialogClickListener = new DialogInterface.OnClickListener() {
             @Override
@@ -107,6 +106,7 @@ public class LocationService extends Service implements
         AlertDialog alert = builder.create();
         alert.show();
     }
+    */
 
     @Override
     public void onConnectionSuspended(int i){
@@ -117,6 +117,13 @@ public class LocationService extends Service implements
         if(location != null){
             sendMessageToUI(location.getLatitude(), location.getLongitude());
         }
+    }
+
+    @Override
+    public void onDestroy(){
+        LocationServices.FusedLocationApi.removeLocationUpdates(locationClient,this);
+        Log.d("TRACKING","Location tracking stopped...");
+        super.onDestroy();
     }
 
     private void sendMessageToUI(double lat, double lng){
@@ -131,10 +138,10 @@ public class LocationService extends Service implements
 
     }
 
+    /*
     public static void setActivityContext(Activity activtyContext){
         activityContext = activtyContext;
     }
-
-
+    */
 
 }

@@ -40,7 +40,7 @@ import retrofit2.converter.gson.GsonConverterFactory;
 public class ApiClient {
 
     //netstat -an | find "LISTEN" to find ip address in xampp
-    private static final String BASE_URL = "https://147.252.142.56/futouristicapi/v1/";
+    private static final String BASE_URL = "https://192.168.1.16/futouristicapi/v1/";
 
     private static Retrofit retrofit = null;
     private List<Attractions> attractions;
@@ -389,6 +389,60 @@ public class ApiClient {
 
             @Override
             public void onFailure(Call<GuideLocation> call, Throwable t) {
+                BusProvider.getInstance().post(new ErrorEvent(-2,t.getMessage()));
+
+            }
+        });
+    }
+
+    public void removeTouristFromTour(String touristUsername){
+        ApiInterface apiService = retrofit.create(ApiInterface.class);
+        Call<String> call = apiService.deleteFromTourGroup(touristUsername);
+
+        call.enqueue(new Callback<String>() {
+            @Override
+            public void onResponse(Call<String> call, Response<String> response) {
+                BusProvider.getInstance().post(new ResponseEvent(response.body()));
+            }
+
+            @Override
+            public void onFailure(Call<String> call, Throwable t) {
+                BusProvider.getInstance().post(new ErrorEvent(-2,t.getMessage()));
+
+            }
+        });
+    }
+
+    public void getGroupStatus(String guideUsername, String landmark){
+        ApiInterface apiService = retrofit.create(ApiInterface.class);
+        Call<TourGroupStatus> call = apiService.getTourGroupStatus(guideUsername, landmark);
+
+        call.enqueue(new Callback<TourGroupStatus>() {
+            @Override
+            public void onResponse(Call<TourGroupStatus> call, Response<TourGroupStatus> response) {
+                BusProvider.getInstance().post(new TourGroupStatusEvent(response.body()));
+            }
+
+            @Override
+            public void onFailure(Call<TourGroupStatus> call, Throwable t) {
+                BusProvider.getInstance().post(new ErrorEvent(-2,t.getMessage()));
+
+            }
+        });
+    }
+
+    public void endTour(String guideUsername, String landmark){
+        ApiInterface apiService = retrofit.create(ApiInterface.class);
+        Call<String> call = apiService.endTourInstance(guideUsername, landmark);
+
+        call.enqueue(new Callback<String>() {
+            @Override
+            public void onResponse(Call<String> call, Response<String> response) {
+                BusProvider.getInstance().post(new ResponseEvent(response.body()));
+            }
+
+            @Override
+            public void onFailure(Call<String> call, Throwable t) {
                 BusProvider.getInstance().post(new ErrorEvent(-2,t.getMessage()));
 
             }

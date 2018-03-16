@@ -4,6 +4,7 @@ import java.util.List;
 
 import retrofit2.Call;
 import retrofit2.http.Body;
+import retrofit2.http.DELETE;
 import retrofit2.http.GET;
 import retrofit2.http.Headers;
 import retrofit2.http.POST;
@@ -74,16 +75,26 @@ public interface ApiInterface {
             @Query("username") String touristUsername
     );
 
-    @PUT("updatelocation")
-    Call<String> updateTouristLocation(
-            @Query("attractions[]") List<String> nearbyLandmarks,
-            @Query("distances[]") List<Double> distances,
-            @Query("username") String username
+    @GET("tourstatus")
+    Call<TourGroupStatus> getTourGroupStatus(
+            @Query("username") String guideUsername,
+            @Query("landmark") String landmark
     );
 
     @GET("guidelocation")
     Call<GuideLocation> getGuideLocation(
             @Query("username") String guideUsername
+    );
+
+    @DELETE("deletetourist")
+    Call<String> deleteFromTourGroup(
+            @Query("username") String touristUsername
+    );
+
+    @PUT("endtour")
+    Call<String> endTourInstance(
+            @Query("username") String guideUsername,
+            @Query("landmark") String landmark
     );
 
 }
