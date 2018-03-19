@@ -40,7 +40,7 @@ import retrofit2.converter.gson.GsonConverterFactory;
 public class ApiClient {
 
     //netstat -an | find "LISTEN" to find ip address in xampp
-    private static final String BASE_URL = "https://192.168.1.16/futouristicapi/v1/";
+    private static final String BASE_URL = "https://192.168.1.12/futouristicapi/v1/";
 
     private static Retrofit retrofit = null;
     private List<Attractions> attractions;
@@ -359,7 +359,7 @@ public class ApiClient {
         });
     }
 
-    public void checkTouristStatus(String username){
+    public void getTouristStatus(String username){
         ApiInterface apiService = retrofit.create(ApiInterface.class);
         Call<TouristStatus> call = apiService.getTouristStatus(username);
 
@@ -389,6 +389,24 @@ public class ApiClient {
 
             @Override
             public void onFailure(Call<GuideLocation> call, Throwable t) {
+                BusProvider.getInstance().post(new ErrorEvent(-2,t.getMessage()));
+
+            }
+        });
+    }
+
+    public void insertGuideCurrentLocation(GuideLocation guideLocation){
+        ApiInterface apiService = retrofit.create(ApiInterface.class);
+        Call<String> call = apiService.addGuideLocation(guideLocation);
+
+        call.enqueue(new Callback<String>() {
+            @Override
+            public void onResponse(Call<String> call, Response<String> response) {
+                BusProvider.getInstance().post(new ResponseEvent(response.body()));
+            }
+
+            @Override
+            public void onFailure(Call<String> call, Throwable t) {
                 BusProvider.getInstance().post(new ErrorEvent(-2,t.getMessage()));
 
             }

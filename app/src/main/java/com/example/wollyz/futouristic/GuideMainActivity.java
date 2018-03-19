@@ -1,16 +1,27 @@
 package com.example.wollyz.futouristic;
 
+import android.Manifest;
 import android.app.Activity;
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.IntentFilter;
+import android.content.pm.PackageManager;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.SwitchCompat;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.CompoundButton;
 import android.widget.Toast;
+
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.GoogleApiAvailability;
 
 import org.greenrobot.eventbus.Subscribe;
 
@@ -43,7 +54,9 @@ public class GuideMainActivity extends AppCompatActivity {
     private Intent listIntent;
     private Intent formIntent;
     private String status;
-
+    private boolean alreadyStartedService;
+    private static final int LOCATION_PERMISSION = 5;
+    private GuideLocation guideLocation;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -63,10 +76,20 @@ public class GuideMainActivity extends AppCompatActivity {
         chosenLandmarkDist = new ArrayList<Double>();
         listIntent = new Intent(this, GuideLandmarkSelectionActivity.class);
         formIntent = new Intent(this, CreateTourGroupActivity.class);
-        tourLandmark = "";
-        status = "";
+        tourLandmark = EMPTY_STRING;
+        status = EMPTY_STRING;
+        alreadyStartedService = false;
+        guideLocation = new GuideLocation();
+        guideLocation.setUsername(username);
+        callBroadcastManager();
+        createWidgetListeners();
         client.getSavedSelection(username);
 
+
+    }
+
+    private void createWidgetListeners(){
+        //Toggle Listeners
         tourToggle.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton compoundButton, boolean isChecked) {
@@ -80,7 +103,7 @@ public class GuideMainActivity extends AppCompatActivity {
                     {
 
                         //set tour group in database to available
-                        if(status != "available"){
+                        if(!status.matches("available")){
                             client.setGroupToAvailable(username,tourLandmark);
                         }
 
@@ -97,6 +120,7 @@ public class GuideMainActivity extends AppCompatActivity {
             }
         });
 
+        //Select landmarks can do a tour on Listener
         selBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -114,6 +138,7 @@ public class GuideMainActivity extends AppCompatActivity {
             }
         });
 
+
         viewGroupBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -127,21 +152,38 @@ public class GuideMainActivity extends AppCompatActivity {
             }
         });
 
-
+        groupCreateBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if(chosenLandmarks.size() > 0 && chosenLandmarksIndex.size() > 0){
+                    Bundle extras = new Bundle();
+                    extras.putString("USERNAME", username);
+                    extras.putStringArrayList("CHOSEN_LANDMARKS", chosenLandmarks);
+                    formIntent.putExtras(extras);
+                    startActivityForResult(formIntent,REQUEST_CODE_FORM);
+                }
+                else
+                {
+                    Toast.makeText(getApplicationContext(), "Please first select landmarks", Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
 
     }
-
     @Override
     public void onResume(){
         super.onResume();
-
         BusProvider.getInstance().register(this);
+        checkGooglePlayService();
     }
 
     @Override
-    public void onPause(){
-        super.onPause();
+    public void onDestroy(){
         BusProvider.getInstance().unregister(this);
+        stopService(new Intent(this,LocationService.class));
+        alreadyStartedService = false;
+        Log.d("DESTROY","Shutting down");
+        super.onDestroy();
     }
 
 
@@ -154,51 +196,6 @@ public class GuideMainActivity extends AppCompatActivity {
             landmarkName = allLandmarks.get(i).getName();
             landmarks.add(landmarkName);
         }
-        /*
-        tourToggle.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(CompoundButton compoundButton, boolean isChecked) {
-                if(isChecked){
-                    //if Guide toggles but has not selected landmarks
-                    if(tourLandmark == EMPTY_STRING){
-                        Toast.makeText(getApplicationContext(), "Please select landmarks and create a tour group", Toast.LENGTH_SHORT).show();
-                        compoundButton.toggle();
-                    }
-                    else
-                    {
-                        //set tour group in database to available
-                        client.setGroupToAvailable(username,tourLandmark);
-
-                    }
-
-                }
-                else
-                {
-                    if(tourLandmark != EMPTY_STRING){
-                        alertUser();
-
-                    }
-
-                }
-
-
-            }
-
-        });
-
-        selBtn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                    Bundle extras_list = new Bundle();
-                    extras_list.putStringArrayList("LANDMARKS", landmarks);
-                    listIntent.putExtras(extras_list);
-
-                startActivityForResult(listIntent,REQUEST_CODE_LIST);
-            }
-        });
-        */
-
-
     }
 
 
@@ -256,25 +253,20 @@ public class GuideMainActivity extends AppCompatActivity {
 
 
     @Subscribe
-    public void onPostResponseEvent(ResponseEvent responseEvent){
+    public void onCreateGroupEvent(ResponseEvent responseEvent){
 
-        groupCreateBtn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                if(chosenLandmarks.size() > 0 && chosenLandmarksIndex.size() > 0){
-                    Bundle extras = new Bundle();
-                    extras.putString("USERNAME", username);
-                    extras.putStringArrayList("CHOSEN_LANDMARKS", chosenLandmarks);
-                    formIntent.putExtras(extras);
-                    startActivityForResult(formIntent,REQUEST_CODE_FORM);
-                }
-                else
-                {
-                    Toast.makeText(getApplicationContext(), "Please first select landmarks", Toast.LENGTH_SHORT).show();
-                }
-            }
-        });
+        if(responseEvent.getResponseMessage().matches("inserted"));{
+            Toast.makeText(getApplicationContext(), "Tour Group Created", Toast.LENGTH_SHORT).show();
+        }
 
+
+    }
+
+    @Subscribe
+    public void onAddGuideLocationEvent(ResponseEvent responseEvent){
+        if(responseEvent.getResponseMessage().matches("success"));{
+            Toast.makeText(getApplicationContext(), "Guide location added to database", Toast.LENGTH_SHORT).show();
+        }
     }
 
     public void alertUser(){
@@ -326,4 +318,106 @@ public class GuideMainActivity extends AppCompatActivity {
         Toast.makeText(this,""+errorEvent.getErrorMsg(),Toast.LENGTH_SHORT).show();
 
     }
+
+    private void callBroadcastManager(){
+        LocalBroadcastManager.getInstance(this).registerReceiver(
+                new BroadcastReceiver() {
+                    @Override
+                    public void onReceive(Context context, Intent intent) {
+                        double lat = intent.getDoubleExtra(LocationService.LATITUDE,0);
+                        double lng = intent.getDoubleExtra(LocationService.LONGITUDE,0);
+                        Toast.makeText(getApplicationContext(),"Guide location:"+lat+","+lng,Toast.LENGTH_LONG).show();
+                        guideLocation.setLatitude(lat);
+                        guideLocation.setLongitude(lng);
+                        client.insertGuideCurrentLocation(guideLocation);
+
+                    }
+                },new IntentFilter(LocationService.ACTION_LOCATION_BROADCAST)
+        );
+    }
+
+    public void checkGooglePlayService(){
+        if(isGooglePlayServicesAvailable()){
+            if(checkLocationPermission())
+            {
+                startLocationService();
+            }
+            else
+            {
+                Log.d("GUIDE_TRACKING", "Requesting Location Permission");
+                requestLocationPermission();
+            }
+        }
+        else{
+            Toast.makeText(getApplicationContext(),"no service available",Toast.LENGTH_LONG).show();
+        }
+    }
+
+    public boolean isGooglePlayServicesAvailable(){
+        GoogleApiAvailability googleApiAvailability = GoogleApiAvailability.getInstance();
+        int status = googleApiAvailability.isGooglePlayServicesAvailable(this);
+        if(status != ConnectionResult.SUCCESS){
+            if(googleApiAvailability.isUserResolvableError(status)){
+                googleApiAvailability.getErrorDialog(this,status,2404).show();
+            }
+            return false;
+        }
+        Log.d("GUIDE_TRACKING", "Google Service Available");
+        return true;
+    }
+
+    private boolean checkLocationPermission(){
+        int finePermissionChk = ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION);
+        int coarsePermissionChk = ActivityCompat.checkSelfPermission(this,Manifest.permission.ACCESS_COARSE_LOCATION);
+
+        if(finePermissionChk != PackageManager.PERMISSION_GRANTED && coarsePermissionChk != PackageManager.PERMISSION_GRANTED ) {
+            return false;
+        }
+        Log.d("GUIDE_TRACKING", "Location permission granted");
+        return true;
+
+    }
+
+    private void requestLocationPermission(){
+        Log.d("GUIDE_TRACKING", "Calling Permission");
+        boolean provideRationale1 = ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.ACCESS_FINE_LOCATION);
+        boolean provideRationale2 =  ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.ACCESS_COARSE_LOCATION);
+        /*
+        if(provideRationale1 || provideRationale2){
+
+            createDialog(R.string.permission_rationale, "permission");
+        }
+        */
+        ActivityCompat.requestPermissions(GuideMainActivity.this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION}, LOCATION_PERMISSION);
+
+
+    }
+
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String permissions[], int[] grantResults)
+    {
+        switch (requestCode){
+            case LOCATION_PERMISSION:{
+                if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    Log.d("GUIDE_TRACKING", "Starting tracking service");
+                    startLocationService();
+                } else {
+
+                }
+            }
+        }
+
+    }
+
+    private void startLocationService(){
+        if(!alreadyStartedService){
+            //LocationService.setActivityContext(this);
+            Intent intent = new Intent(this, LocationService.class);
+            startService(intent);
+            alreadyStartedService = true;
+            Log.d("TRACKING","Location tracking enabled...");
+        }
+    }
+
 }

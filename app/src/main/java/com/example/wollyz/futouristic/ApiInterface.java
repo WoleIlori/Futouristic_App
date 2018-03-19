@@ -86,6 +86,12 @@ public interface ApiInterface {
             @Query("username") String guideUsername
     );
 
+    @Headers("Content-Type: application/json")
+    @POST("addguidelocation")
+    Call<String> addGuideLocation(
+            @Body Object guideLocation
+    );
+
     @DELETE("deletetourist")
     Call<String> deleteFromTourGroup(
             @Query("username") String touristUsername
@@ -96,5 +102,6 @@ public interface ApiInterface {
             @Query("username") String guideUsername,
             @Query("landmark") String landmark
     );
+
 
 }

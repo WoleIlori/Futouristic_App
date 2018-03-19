@@ -1,6 +1,7 @@
 package com.example.wollyz.futouristic;
 
 import android.Manifest;
+import android.app.Notification;
 import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -8,6 +9,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
+import android.location.Location;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AlertDialog;
@@ -52,7 +54,7 @@ public class TouristMainActivity extends AppCompatActivity {
     private SwitchCompat findTour;
     private boolean alreadyStartedService;
     private static final int LOCATION_PERMISSION = 3;
-    private boolean hasLastLocation;
+    private Location lastLocation;
 
 
 
@@ -71,12 +73,20 @@ public class TouristMainActivity extends AppCompatActivity {
         alreadyStartedService = false;
         notify_landmarks = new ArrayList<String>();
         notificationUtils = new NotificationUtils(this);
-        hasLastLocation = false;
+        lastLocation = new Location("");
         client = new ApiClient(this);
-        client.getAttractions();
         selectedAttraction = new Attractions();
         guide_username = EMPTY_STRING;
         availableTours = new ArrayList<TourNearby>();
+        callBroadcastManager();
+        setListeners();
+        client.getAttractions();
+
+
+    }
+
+    private void setListeners()
+    {
         viewMapBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -93,6 +103,8 @@ public class TouristMainActivity extends AppCompatActivity {
 
             }
         });
+
+
         leaveTourBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -105,21 +117,42 @@ public class TouristMainActivity extends AppCompatActivity {
                 }
             }
         });
+
+        findTour.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton compoundButton, boolean isChecked) {
+                if(isChecked) {
+                    if(totalPeople.getText().toString().isEmpty()){
+                        Toast.makeText(getApplicationContext(), "Please enter total number of people", Toast.LENGTH_SHORT).show();
+                        compoundButton.toggle();
+                    }
+                    else {
+                        total_people = Integer.parseInt(totalPeople.getText().toString());
+                        checkGooglePlayService();
+
+                    }
+
+                }
+                else {
+
+                }
+            }
+        });
+
     }
 
     @Override
     public void onResume(){
         super.onResume();
         BusProvider.getInstance().register(this);
-        checkGooglePlayService();
     }
 
     @Override
-    public void onPause(){
-        super.onPause();
+    public void onDestroy(){
         BusProvider.getInstance().unregister(this);
         stopService(new Intent(this,LocationService.class));
         alreadyStartedService = false;
+        super.onDestroy();
     }
 
     public void checkGooglePlayService(){
@@ -147,7 +180,7 @@ public class TouristMainActivity extends AppCompatActivity {
                         double lat = intent.getDoubleExtra(LocationService.LATITUDE,0);
                         double lng = intent.getDoubleExtra(LocationService.LONGITUDE,0);
                         findNearestAttractions(lat,lng);
-                        Toast.makeText(getApplicationContext(),"location: "+lat+","+lng,Toast.LENGTH_LONG).show();
+                        Toast.makeText(getApplicationContext(),"Tourist location:"+lat+","+lng,Toast.LENGTH_LONG).show();
 
                     }
                 },new IntentFilter(LocationService.ACTION_LOCATION_BROADCAST)
@@ -158,40 +191,18 @@ public class TouristMainActivity extends AppCompatActivity {
     public void onGetAllAttractionsEvent(AttractionsReceivedEvent serverEvent){
         attractions = serverEvent.getAttraction();
         locHandler = new LandmarksNearbyHandler(attractions);
-        callBroadcastManager();
-        findTour.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(CompoundButton compoundButton, boolean isChecked) {
-                if(isChecked) {
-                    if(totalPeople.getText().toString().isEmpty()){
-                        Toast.makeText(getApplicationContext(), "Please enter total number of people", Toast.LENGTH_SHORT).show();
-                        compoundButton.toggle();
-                    }
-                    else {
-                        total_people = Integer.parseInt(totalPeople.getText().toString());
-                        checkGooglePlayService();
+        Log.d("Attractions", "Received all attractions");
 
-                    }
-
-                }
-                else {
-                    /*
-                    Intent intent = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
-                    startActivity(intent);
-                    Toast.makeText(getApplication(), "Please turn off GPS ", Toast.LENGTH_SHORT).show();
-                    */
-                }
-            }
-        });
 
     }
 
     public void findNearestAttractions(double userLat,double userLong){
+
         nearby = locHandler.getNearestAttractions(userLat,userLong);
-        if(nearby!= null) {
-            nearby.setUsername(username);
-            client.postLandmarksNearTourist(nearby);
-        }
+        nearby.setUsername(username);
+        client.postLandmarksNearTourist(nearby);
+        Log.d("Nearby attractions","Calculated nearby attractions");
+
     }
 
 
@@ -199,15 +210,19 @@ public class TouristMainActivity extends AppCompatActivity {
     public void onPostNearbyAttractionsEvent(ResponseEvent serverEvent){
 
         String message = serverEvent.getResponseMessage();
-        Toast.makeText(getApplicationContext(), message, Toast.LENGTH_SHORT).show();
-        client.checkTouristStatus(username); //check if tourist is available *NEW
+
+        Log.d("ON","Checking tourist available....");
+        client.getTouristStatus(username);
+
+        //check if tourist is available *NEW
 
     }
 
     @Subscribe
     public void onGetTouristStatusEvent(TouristStatusEvent serverEvent){
         TouristStatus touristStatus = serverEvent.getTouristStatus();
-        if(touristStatus.getStatus().equals("available")){
+        if(touristStatus.getStatus().equals("available") && nearby != null){
+
             client.getToursNearby(nearby.getAttractions(),total_people);
         }
     }
@@ -271,14 +286,6 @@ public class TouristMainActivity extends AppCompatActivity {
 
     private void requestLocationPermission(){
         Log.d("Permission", "Calling Permission");
-        boolean provideRationale1 = ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.ACCESS_FINE_LOCATION);
-        boolean provideRationale2 =  ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.ACCESS_COARSE_LOCATION);
-        /*
-        if(provideRationale1 || provideRationale2){
-
-            createDialog(R.string.permission_rationale, "permission");
-        }
-        */
         ActivityCompat.requestPermissions(TouristMainActivity.this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION}, LOCATION_PERMISSION);
 
 
@@ -349,10 +356,11 @@ public class TouristMainActivity extends AppCompatActivity {
 
     public void notifyLandmarkToTourist() {
         NotificationCompat.Builder builder;
+        Notification notification;
         int notificationID = 0;
         String title = "Tour Notification";
         String text = availableTours.size() + " tour(s) available near you";
-        builder = notificationUtils.createNotification(title, text);
+        builder = notificationUtils.createNotificationBuilder(title, text);
         Intent resultIntent = new Intent(this, NotifyTouristActivity.class);
 
         Bundle extras = new Bundle();
@@ -373,10 +381,10 @@ public class TouristMainActivity extends AppCompatActivity {
                 resultIntent,
                 PendingIntent.FLAG_UPDATE_CURRENT);
         builder.setContentIntent(contentIntent);
-        notificationUtils.notifyTourist(notificationID, builder);
+        notification = notificationUtils.buildNotification(builder);
+        notificationUtils.notifyTourist(notificationID, notification);
 
     }
-
 
 
 }

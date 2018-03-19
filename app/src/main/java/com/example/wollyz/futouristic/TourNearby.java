@@ -9,12 +9,6 @@ import java.io.Serializable;
  * Created by Wollyz on 01/03/2018.
  */
 public class TourNearby implements Serializable {
-    /*
-    @SerializedName("name")
-    @Expose
-    private String name;
-    */
-
     @SerializedName("guide_name")
     @Expose
     private String guide_name;
@@ -31,15 +25,11 @@ public class TourNearby implements Serializable {
     @Expose
     private int groupLimit;
 
-    /*
-    public String getName() {
-        return name;
-    }
+    @SerializedName("start_time")
+    @Expose
+    private String startTime;
 
-    public void setName(String name) {
-        this.name = name;
-    }
-    */
+
 
     public String getLandmark() {
         return landmark;
@@ -71,6 +61,14 @@ public class TourNearby implements Serializable {
 
     public int getGroupLimit(){
         return groupLimit;
+    }
+
+    public String getStartTime() {
+        return startTime;
+    }
+
+    public void setStartTime(String startTime) {
+        this.startTime = startTime;
     }
 
 

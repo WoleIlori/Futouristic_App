@@ -1,20 +1,28 @@
 package com.example.wollyz.futouristic;
 
+import android.app.AlarmManager;
+import android.app.Notification;
+import android.app.PendingIntent;
+import android.content.Context;
+import android.content.Intent;
+import android.os.SystemClock;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.app.NotificationCompat;
 import android.widget.Toast;
 
 import org.greenrobot.eventbus.Subscribe;
 
 import java.util.ArrayList;
+import java.util.StringTokenizer;
 
 public class NotifyTouristActivity extends AppCompatActivity {
 
     private ViewPager viewPager;
     private TouristSwipeAdapter swipeAdapter;
     private ArrayList<TourNearby> availableTours;
-    private TourNearby selectedTour;
+    private TourNearby selected;
     private TouristInterest touristInterest;
     private int size;
     private ApiClient client;
@@ -23,6 +31,7 @@ public class NotifyTouristActivity extends AppCompatActivity {
     private ArrayList<Attractions> allLandmarks;
     public static Attractions attraction;
     public static String guide_username;
+    private NotificationUtils notificationUtils;
 
 
 
@@ -43,7 +52,8 @@ public class NotifyTouristActivity extends AppCompatActivity {
             TourNearby g = (TourNearby)getIntent().getSerializableExtra("TOUR "+(i+1));
             availableTours.add(g);
         }
-
+        notificationUtils = new NotificationUtils(this);
+        attraction = new Attractions();
         viewPager = (ViewPager)findViewById(R.id.view_pager);
         swipeAdapter = new TouristSwipeAdapter(this,availableTours);
         viewPager.setAdapter(swipeAdapter);
@@ -73,7 +83,7 @@ public class NotifyTouristActivity extends AppCompatActivity {
 
     @Subscribe
     public void onLandmarkSelectedEvent(TouristInterestEvent event){
-        TourNearby selected = event.getSelectedTour();
+        selected = event.getSelectedTour();
         guide_username = selected.getGuideName();
         touristInterest.setGuideUsername(selected.getGuideName());
         touristInterest.setLandmark(selected.getLandmark());
@@ -91,7 +101,27 @@ public class NotifyTouristActivity extends AppCompatActivity {
         if(tourIndex >= 0){
             attraction = allLandmarks.get(tourIndex);
         }
-        finish();
+        StringTokenizer time = new StringTokenizer(selected.getStartTime(),":");
+        String time_hr = time.nextToken();
+        String time_min = time.nextToken();
+        String time_sec = time.nextToken();
+
+        int hr = Integer.parseInt(time_hr)* 60 * 60 * 1000;
+        int min = Integer.parseInt(time_min) * 60 * 1000;
+        int sec = Integer.parseInt(time_sec) * 1000;
+
+        //start time in milliseconds
+        int startTime = hr + min + sec;
+
+        //remind 10 mins before tour starts
+        int notifyTime = startTime - (10 * 60 * 1000);
+
+        scheduleReminder(50000);
+
+
+
+
+        //finish();
     }
 
     private int getIndex(String landmark){
@@ -100,6 +130,29 @@ public class NotifyTouristActivity extends AppCompatActivity {
             return i;
         }
         return -1;
+    }
+
+    private void scheduleReminder(int delay){
+        NotificationCompat.Builder builder;
+        Notification notification;
+
+        String title = "Tour Notification";
+        String content = "Reminder tour will start soon. Please make your way there";
+
+        builder = notificationUtils.createNotificationBuilder(title,content);
+        notification = notificationUtils.buildNotification(builder);
+        Intent notificationIntent = new Intent(this, NotificationPublisher.class);
+
+        notificationIntent.putExtra(NotificationPublisher.NOTIFICATION_ID, 1);
+        notificationIntent.putExtra(NotificationPublisher.NOTIFICATION, notification);
+        PendingIntent pendingIntent = PendingIntent.getBroadcast(this, 0,notificationIntent,PendingIntent.FLAG_UPDATE_CURRENT);
+        builder.setContentIntent(pendingIntent);
+
+        long futureInMillis = SystemClock.elapsedRealtime() + delay;
+        AlarmManager alarmManager = (AlarmManager)getSystemService(Context.ALARM_SERVICE);
+        alarmManager.set(AlarmManager.ELAPSED_REALTIME_WAKEUP,futureInMillis,pendingIntent);
+        finish();
+
     }
 
 
