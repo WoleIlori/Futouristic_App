@@ -52,7 +52,7 @@ public class GuideMainActivity extends AppCompatActivity {
     private SwitchCompat tourToggle;
     private String tourLandmark; //stores landmark guide decides to do
     private Intent listIntent;
-    private Intent formIntent;
+    //private Intent formIntent;
     private String status;
     private boolean alreadyStartedService;
     private static final int LOCATION_PERMISSION = 5;
@@ -75,7 +75,7 @@ public class GuideMainActivity extends AppCompatActivity {
         chosenLandmarksIndex = new ArrayList<Integer>();
         chosenLandmarkDist = new ArrayList<Double>();
         listIntent = new Intent(this, GuideLandmarkSelectionActivity.class);
-        formIntent = new Intent(this, CreateTourGroupActivity.class);
+        //formIntent = new Intent(this, CreateTourGroupActivity.class);
         tourLandmark = EMPTY_STRING;
         status = EMPTY_STRING;
         alreadyStartedService = false;
@@ -83,7 +83,8 @@ public class GuideMainActivity extends AppCompatActivity {
         guideLocation.setUsername(username);
         callBroadcastManager();
         createWidgetListeners();
-        client.getSavedSelection(username);
+        client.getAttractions();
+
 
 
     }
@@ -112,7 +113,7 @@ public class GuideMainActivity extends AppCompatActivity {
                 }
                 else {
                     if (tourLandmark != EMPTY_STRING) {
-                        alertUser();
+                        ToggleoffAlert();
 
                     }
 
@@ -155,19 +156,27 @@ public class GuideMainActivity extends AppCompatActivity {
         groupCreateBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if(chosenLandmarks.size() > 0 && chosenLandmarksIndex.size() > 0){
+
+                if (chosenLandmarks.size() > 0 && chosenLandmarksIndex.size() > 0 && tourLandmark.matches(EMPTY_STRING)) {
+                    Intent formIntent = new Intent(view.getContext(), CreateTourGroupActivity.class);
                     Bundle extras = new Bundle();
                     extras.putString("USERNAME", username);
                     extras.putStringArrayList("CHOSEN_LANDMARKS", chosenLandmarks);
                     formIntent.putExtras(extras);
-                    startActivityForResult(formIntent,REQUEST_CODE_FORM);
+                    startActivityForResult(formIntent, REQUEST_CODE_FORM);
+
                 }
-                else
-                {
-                    Toast.makeText(getApplicationContext(), "Please first select landmarks", Toast.LENGTH_SHORT).show();
+
+                if(!tourLandmark.matches(EMPTY_STRING)){
+                    //Toast.makeText(getApplicationContext(), "Please first select landmarks", Toast.LENGTH_SHORT).show();
+                    ModifyTourGroupAlert();
                 }
+
+
+
             }
         });
+
 
     }
     @Override
@@ -178,8 +187,13 @@ public class GuideMainActivity extends AppCompatActivity {
     }
 
     @Override
-    public void onDestroy(){
+    public void onPause(){
+        super.onPause();
         BusProvider.getInstance().unregister(this);
+    }
+
+    @Override
+    public void onDestroy(){
         stopService(new Intent(this,LocationService.class));
         alreadyStartedService = false;
         Log.d("DESTROY","Shutting down");
@@ -196,6 +210,7 @@ public class GuideMainActivity extends AppCompatActivity {
             landmarkName = allLandmarks.get(i).getName();
             landmarks.add(landmarkName);
         }
+        client.getGuideSavedSelection(username);
     }
 
 
@@ -269,7 +284,7 @@ public class GuideMainActivity extends AppCompatActivity {
         }
     }
 
-    public void alertUser(){
+    public void ToggleoffAlert(){
         DialogInterface.OnClickListener dialogClickListener = new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialogInterface, int which) {
@@ -294,13 +309,59 @@ public class GuideMainActivity extends AppCompatActivity {
         AlertDialog alert = builder.create();
         alert.show();
     }
+
+    public void ModifyTourGroupAlert(){
+        DialogInterface.OnClickListener dialogClickListener = new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int which) {
+                switch(which){
+                    case DialogInterface.BUTTON_POSITIVE:{
+                        Intent formIntent = new Intent(GuideMainActivity.this, CreateTourGroupActivity.class);
+                        Bundle extras = new Bundle();
+                        extras.putString("USERNAME", username);
+                        extras.putStringArrayList("CHOSEN_LANDMARKS", chosenLandmarks);
+                        formIntent.putExtras(extras);
+                        startActivityForResult(formIntent,REQUEST_CODE_FORM);
+                        dialogInterface.dismiss();
+                        break;
+                    }
+                    case DialogInterface.BUTTON_NEGATIVE:{
+                        dialogInterface.dismiss();
+                        break;
+                    }
+                }
+
+            }
+        };
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setMessage("Are you sure? Previous Tour Group will be removed").setPositiveButton("Yes",dialogClickListener)
+                .setNegativeButton("No",dialogClickListener);
+        AlertDialog alert = builder.create();
+        alert.show();
+    }
+
     @Subscribe
     public void onGetSavedStateEvent(GuideSavedStateEvent event){
         GuideSavedState guideSavedState = event.getSavedState();
         chosenLandmarks = (ArrayList<String>) guideSavedState.getGuidesList();
         tourLandmark = guideSavedState.getTour();
         status = guideSavedState.getStatus();
-        client.getAttractions();
+        if(tourLandmark.matches(EMPTY_STRING)){
+            for(int i =0; i < chosenLandmarks.size(); i++){
+                chosenLandmarksIndex.add(getChosenLandmarkIndex(chosenLandmarks.get(i)));
+            }
+
+        }
+
+    }
+
+    private int getChosenLandmarkIndex(String landmark){
+        for(int i =0; i < allLandmarks.size();i++){
+            if(landmark.matches(allLandmarks.get(i).getName()));
+            return i;
+        }
+        return -1;
     }
 
     @Subscribe

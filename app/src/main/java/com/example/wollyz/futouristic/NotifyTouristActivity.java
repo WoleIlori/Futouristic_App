@@ -31,6 +31,7 @@ public class NotifyTouristActivity extends AppCompatActivity {
     private ArrayList<Attractions> allLandmarks;
     public static Attractions attraction;
     public static String guide_username;
+    public static float price;
     private NotificationUtils notificationUtils;
 
 
@@ -53,7 +54,7 @@ public class NotifyTouristActivity extends AppCompatActivity {
             availableTours.add(g);
         }
         notificationUtils = new NotificationUtils(this);
-        attraction = new Attractions();
+        //attraction = new Attractions();
         viewPager = (ViewPager)findViewById(R.id.view_pager);
         swipeAdapter = new TouristSwipeAdapter(this,availableTours);
         viewPager.setAdapter(swipeAdapter);
@@ -85,6 +86,7 @@ public class NotifyTouristActivity extends AppCompatActivity {
     public void onLandmarkSelectedEvent(TouristInterestEvent event){
         selected = event.getSelectedTour();
         guide_username = selected.getGuideName();
+        price = selected.getPrice();
         touristInterest.setGuideUsername(selected.getGuideName());
         touristInterest.setLandmark(selected.getLandmark());
         touristInterest.setTouristUsername(tourist_username);
@@ -116,12 +118,12 @@ public class NotifyTouristActivity extends AppCompatActivity {
         //remind 10 mins before tour starts
         int notifyTime = startTime - (10 * 60 * 1000);
 
-        scheduleReminder(50000);
+        //scheduleReminder(50000);
 
 
 
 
-        //finish();
+        finish();
     }
 
     private int getIndex(String landmark){
@@ -151,9 +153,10 @@ public class NotifyTouristActivity extends AppCompatActivity {
         long futureInMillis = SystemClock.elapsedRealtime() + delay;
         AlarmManager alarmManager = (AlarmManager)getSystemService(Context.ALARM_SERVICE);
         alarmManager.set(AlarmManager.ELAPSED_REALTIME_WAKEUP,futureInMillis,pendingIntent);
-        finish();
+        //finish();
 
     }
+
 
 
 

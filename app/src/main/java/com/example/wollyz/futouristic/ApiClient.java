@@ -40,7 +40,7 @@ import retrofit2.converter.gson.GsonConverterFactory;
 public class ApiClient {
 
     //netstat -an | find "LISTEN" to find ip address in xampp
-    private static final String BASE_URL = "https://192.168.1.12/futouristicapi/v1/";
+    private static final String BASE_URL = "https://192.168.1.11/futouristicapi/v1/";
 
     private static Retrofit retrofit = null;
     private List<Attractions> attractions;
@@ -341,7 +341,7 @@ public class ApiClient {
 
     }
 
-    public void getSavedSelection(String guideUsername){
+    public void getGuideSavedSelection(String guideUsername){
         ApiInterface apiService = retrofit.create(ApiInterface.class);
         Call<GuideSavedState> call = apiService.getGuideSavedState(guideUsername);
 
@@ -358,6 +358,26 @@ public class ApiClient {
             }
         });
     }
+
+
+    public void getTouristSavedState(String touristUsername){
+        ApiInterface apiService = retrofit.create(ApiInterface.class);
+        Call<TouristSavedState> call = apiService.getTouristSavedState(touristUsername);
+
+        call.enqueue(new Callback<TouristSavedState>() {
+            @Override
+            public void onResponse(Call<TouristSavedState> call, Response<TouristSavedState> response) {
+                BusProvider.getInstance().post(new TouristSavedStateEvent(response.body()));
+            }
+
+            @Override
+            public void onFailure(Call<TouristSavedState> call, Throwable t) {
+                BusProvider.getInstance().post(new ErrorEvent(-2,t.getMessage()));
+
+            }
+        });
+    }
+
 
     public void getTouristStatus(String username){
         ApiInterface apiService = retrofit.create(ApiInterface.class);
@@ -466,5 +486,4 @@ public class ApiClient {
             }
         });
     }
-
 }

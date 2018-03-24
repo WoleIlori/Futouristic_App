@@ -65,9 +65,14 @@ public interface ApiInterface {
             @Query("landmark") String landmark
     );
 
-    @GET("savedstate")
+    @GET("guidesavedstate")
     Call<GuideSavedState> getGuideSavedState(
             @Query("username") String guideUsername
+    );
+
+    @GET("touristsavedstate")
+    Call<TouristSavedState> getTouristSavedState(
+            @Query("username") String touristUsername
     );
 
     @GET("touriststatus")
@@ -102,6 +107,7 @@ public interface ApiInterface {
             @Query("username") String guideUsername,
             @Query("landmark") String landmark
     );
+
 
 
 }

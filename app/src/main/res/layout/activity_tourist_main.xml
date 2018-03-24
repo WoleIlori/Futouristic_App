@@ -41,20 +41,27 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="View Current Location"
-        android:layout_below="@+id/leaveTourBtn"
-        android:layout_toLeftOf="@+id/findTour"
-        android:layout_toStartOf="@+id/findTour"
-        android:layout_marginTop="66dp" />
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="102dp" />
 
     <Button
         android:id="@+id/leaveTourBtn"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Leave Current Tour"
-        android:layout_marginTop="127dp"
-        android:layout_below="@+id/textView3"
-        android:layout_alignRight="@+id/mapBtn"
-        android:layout_alignEnd="@+id/mapBtn" />
+        android:layout_centerVertical="true"
+        android:layout_alignLeft="@+id/mapBtn"
+        android:layout_alignStart="@+id/mapBtn" />
+
+    <Button
+        android:id="@+id/payTourBtn"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Pay for Tour"
+        android:layout_below="@+id/total_people"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="43dp" />
 
 
 </RelativeLayout>

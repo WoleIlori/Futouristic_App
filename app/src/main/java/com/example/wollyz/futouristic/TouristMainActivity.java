@@ -47,6 +47,8 @@ public class TouristMainActivity extends AppCompatActivity {
     private EditText totalPeople;
     private Button viewMapBtn;
     private Button leaveTourBtn;
+    private Button payTourBtn;
+    private float tourPrice;
     private int total_people;
     private Attractions selectedAttraction;
     private String guide_username;
@@ -69,14 +71,13 @@ public class TouristMainActivity extends AppCompatActivity {
         findTour = (SwitchCompat) findViewById(R.id.findTour);
         viewMapBtn = (Button)findViewById(R.id.mapBtn);
         leaveTourBtn = (Button)findViewById(R.id.leaveTourBtn);
+        payTourBtn = (Button)findViewById(R.id.payTourBtn);
         nearby = new NearbyAttraction();
         alreadyStartedService = false;
         notify_landmarks = new ArrayList<String>();
         notificationUtils = new NotificationUtils(this);
         lastLocation = new Location("");
         client = new ApiClient(this);
-        selectedAttraction = new Attractions();
-        guide_username = EMPTY_STRING;
         availableTours = new ArrayList<TourNearby>();
         callBroadcastManager();
         setListeners();
@@ -90,15 +91,23 @@ public class TouristMainActivity extends AppCompatActivity {
         viewMapBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                //Attractions selectedAttraction;
                 Intent mapIntent = new Intent(view.getContext(), MapsActivity.class);
-                if(NotifyTouristActivity.attraction!=null && NotifyTouristActivity.guide_username!=null){
-                    selectedAttraction = NotifyTouristActivity.attraction;
-                    guide_username = NotifyTouristActivity.guide_username;
+                if(NotifyTouristActivity.attraction!=null && NotifyTouristActivity.guide_username!=null) {
+                    Bundle extra = new Bundle();
+                    extra.putSerializable("SELECTED_LANDMARK", NotifyTouristActivity.attraction);
+                    extra.putString("GUIDE", NotifyTouristActivity.guide_username);
+                    mapIntent.putExtras(extra);
+
                 }
-                Bundle extra = new Bundle();
-                extra.putSerializable("SELECTED_LANDMARK",selectedAttraction);
-                extra.putString("GUIDE",guide_username);
-                mapIntent.putExtras(extra);
+                if(selectedAttraction!=null && guide_username!=null) {
+
+                    Bundle extra = new Bundle();
+                    extra.putSerializable("SELECTED_LANDMARK", selectedAttraction);
+                    extra.putString("GUIDE", guide_username);
+                    mapIntent.putExtras(extra);
+
+                }
                 startActivity(mapIntent);
 
             }
@@ -108,12 +117,13 @@ public class TouristMainActivity extends AppCompatActivity {
         leaveTourBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                selectedAttraction = NotifyTouristActivity.attraction;
-                if(selectedAttraction.getName().matches(EMPTY_STRING)){
-                    Toast.makeText(getApplicationContext(), "You have not joined a tour", Toast.LENGTH_SHORT).show();
+                //Attractions selectedAttraction = NotifyTouristActivity.attraction;
+                if(selectedAttraction!=null || NotifyTouristActivity.attraction!=null ){
+                    createDialog(R.string.alert,"Leave Tour");
+
                 }
                 else {
-                    createDialog(R.string.alert,"Leave Tour");
+                    Toast.makeText(getApplicationContext(), "You have not joined a tour", Toast.LENGTH_SHORT).show();
                 }
             }
         });
@@ -139,6 +149,22 @@ public class TouristMainActivity extends AppCompatActivity {
             }
         });
 
+        payTourBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent paymentIntent = new Intent(view.getContext(), TourPaymentActivity.class);
+                if(NotifyTouristActivity.attraction != null){
+                    paymentIntent.putExtra("TOUR_AMT", NotifyTouristActivity.price);
+                    startActivity(paymentIntent);
+                }
+                else if(selectedAttraction != null)
+                {
+                    paymentIntent.putExtra("TOUR_AMT", tourPrice);
+                    startActivity(paymentIntent);
+                }
+            }
+        });
+
     }
 
     @Override
@@ -148,8 +174,14 @@ public class TouristMainActivity extends AppCompatActivity {
     }
 
     @Override
-    public void onDestroy(){
+    public void onPause(){
+        super.onPause();
         BusProvider.getInstance().unregister(this);
+    }
+
+    @Override
+    public void onDestroy(){
+
         stopService(new Intent(this,LocationService.class));
         alreadyStartedService = false;
         super.onDestroy();
@@ -192,10 +224,31 @@ public class TouristMainActivity extends AppCompatActivity {
         attractions = serverEvent.getAttraction();
         locHandler = new LandmarksNearbyHandler(attractions);
         Log.d("Attractions", "Received all attractions");
+        client.getTouristSavedState(username);
 
 
     }
 
+    @Subscribe
+    public void onGetTouristSavedStateEvent(TouristSavedStateEvent event){
+        TouristSavedState savedState = event.getTouristSavedState();
+        String landmark = savedState.getAttraction();
+        if(!landmark.matches(EMPTY_STRING)){
+            int index = getLandmarkIndex(landmark);
+            selectedAttraction = attractions.get(index);
+            guide_username = savedState.getGuide();
+            tourPrice = savedState.getPrice();
+        }
+
+    }
+
+    private int getLandmarkIndex(String landmark){
+        for(int i =0; i < attractions.size();i++){
+            if(landmark.matches(attractions.get(i).getName()));
+            return i;
+        }
+        return -1;
+    }
     public void findNearestAttractions(double userLat,double userLong){
 
         nearby = locHandler.getNearestAttractions(userLat,userLong);
@@ -258,6 +311,7 @@ public class TouristMainActivity extends AppCompatActivity {
         Toast.makeText(this,""+errorEvent.getErrorMsg(),Toast.LENGTH_SHORT).show();
 
     }
+
 
     public boolean isGooglePlayServicesAvailable(){
         GoogleApiAvailability googleApiAvailability = GoogleApiAvailability.getInstance();
