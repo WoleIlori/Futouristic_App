@@ -8,10 +8,57 @@
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
     tools:context="com.example.wollyz.futouristic.MainActivity">
-
-    <Button
+    <TextView
+        android:id="@+id/logo_main"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Go to login!"
-        android:id="@+id/btn"/>
+        android:text="FUTOURISTIC"
+        android:textSize="35sp"
+        android:textColor="@color/navyblue"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="140dp"
+        />
+
+    <TextView
+        android:id="@+id/main_desc"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Join and connect for tours"
+        android:layout_centerHorizontal="true"
+        android:layout_below="@+id/logo_main"
+        android:layout_marginTop="20dp"
+        android:textColor="@color/navyblue"
+        android:textSize="18sp"
+        />
+
+    <TextView
+        android:id="@+id/main_option"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Please choose from option"
+        android:layout_centerHorizontal="true"
+        android:layout_below="@+id/main_desc"
+        android:layout_marginTop="10dp"
+        android:textColor="@color/navyblue"
+        android:textSize="18sp"
+        />
+
+    <Button
+        android:id="@+id/touristLoginBtn"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Tourist"
+        android:layout_below="@+id/main_option"
+        android:layout_alignLeft="@+id/logo_main"
+        android:layout_marginTop="20dp"/>
+
+    <Button
+        android:id="@+id/guideLoginBtn"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Guide"
+        android:layout_below="@+id/main_option"
+        android:layout_alignRight="@+id/logo_main"
+        android:layout_marginTop="20dp"
+        />
 </RelativeLayout>

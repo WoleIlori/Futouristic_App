@@ -9,59 +9,89 @@
     android:paddingTop="@dimen/activity_vertical_margin"
     tools:context="com.example.wollyz.futouristic.TouristMainActivity">
 
-    <android.support.v7.widget.SwitchCompat
-        android:id="@+id/findTour"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Find Tour"
-        android:layout_alignBottom="@+id/total_people"
-        android:layout_alignParentRight="true"
-        android:layout_alignParentEnd="true" />
     <TextView
+        android:id="@+id/logo_title"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:id="@+id/textView3"
-        android:text="Total person(s)"
-        android:inputType="number"
-        android:layout_alignBottom="@+id/total_people"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentStart="true" />
-
-    <EditText
-        android:id="@+id/total_people"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:inputType="number"
+        android:text="FUTOURISTIC"
+        android:textSize="30sp"
+        android:textColor="@color/navyblue"
         android:layout_alignParentTop="true"
-        android:layout_toRightOf="@+id/textView3"
-        android:layout_toEndOf="@+id/textView3" />
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="10dp"/>
 
-    <Button
-        android:id="@+id/mapBtn"
+    <LinearLayout
+        android:layout_marginTop="20dp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/logo_title"
+        android:orientation="horizontal">
+
+        <EditText
+            android:id="@+id/total_people"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:inputType="number"
+            android:hint="Total People"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentStart="true"
+            />
+
+        <android.support.v7.widget.SwitchCompat
+            android:id="@+id/findTour"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Find Tour"
+            android:textSize="18dp"
+            android:layout_marginLeft="20dp"
+            />
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:orientation="vertical"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="View Current Location"
+        android:id="@+id/linearLayout"
         android:layout_alignParentBottom="true"
         android:layout_centerHorizontal="true"
-        android:layout_marginBottom="102dp" />
+        android:layout_marginBottom="80dp">
 
-    <Button
-        android:id="@+id/leaveTourBtn"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Leave Current Tour"
-        android:layout_centerVertical="true"
-        android:layout_alignLeft="@+id/mapBtn"
-        android:layout_alignStart="@+id/mapBtn" />
+        <Button
+            android:id="@+id/payTourBtn"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Pay for Tour"
+            android:layout_marginLeft="40dp"
 
-    <Button
-        android:id="@+id/payTourBtn"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Pay for Tour"
-        android:layout_below="@+id/total_people"
-        android:layout_centerHorizontal="true"
-        android:layout_marginTop="43dp" />
+            />
 
+        <Button
+            android:id="@+id/leaveTourBtn"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Leave Current Tour"
+            android:layout_margin="15dp"
+            />
+
+        <Button
+            android:id="@+id/mapBtn"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="View Current Location"
+            android:layout_marginTop="15dp"
+            />
+
+        <Button
+            android:id="@+id/touristLogoutBtn"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Logout"
+            android:layout_marginTop="30dp"
+            android:layout_marginLeft="50dp"
+            />
+
+
+    </LinearLayout>
 
 </RelativeLayout>

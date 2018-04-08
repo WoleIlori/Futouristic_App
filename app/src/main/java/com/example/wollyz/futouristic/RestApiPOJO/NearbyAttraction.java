@@ -1,4 +1,4 @@
-package com.example.wollyz.futouristic;
+package com.example.wollyz.futouristic.RestApiPOJO;
 
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
@@ -61,5 +61,13 @@ public class NearbyAttraction {
     public Double getDist(int pos)
     {
         return distances.get(pos);
+    }
+
+    public void emptyAttractions(){
+        attractions.clear();
+    }
+
+    public void emptyDistances(){
+        distances.clear();
     }
 }

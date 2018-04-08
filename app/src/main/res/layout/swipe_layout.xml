@@ -1,19 +1,154 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
     <TextView
-        android:id="@+id/textview"
+        android:id="@+id/ad_title"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        />
+        android:text="Available Tour"
+        android:textSize="30dp"
+        android:textColor="@color/navyblue"
+        android:layout_alignParentTop="true"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="30dp"/>
+
+    <RelativeLayout
+        android:layout_width="300dp"
+        android:layout_height="290dp"
+        android:layout_below="@+id/ad_title"
+        android:layout_centerHorizontal="true"
+        android:background="@color/grey"
+        android:layout_marginTop="20dp"
+        >
+
+        <TextView
+            android:id="@+id/landmarkTv"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Attraction:"
+            android:layout_marginLeft="20dp"
+            android:layout_marginTop="20dp"
+            android:textColor="@color/black"/>
+
+        <TextView
+            android:id="@+id/landmark_name"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignBottom="@+id/landmarkTv"
+            android:layout_toRightOf="@+id/landmarkTv"
+            android:layout_marginLeft="10dp"
+            android:textColor="@color/black"
+            />
+
+        <TextView
+            android:id="@+id/guideTv"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignLeft="@+id/landmarkTv"
+            android:text="Guide:"
+            android:layout_marginTop="20dp"
+            android:layout_below="@+id/landmarkTv"
+            android:textColor="@color/black"/>
+
+        <TextView
+            android:id="@+id/guide_name"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignBottom="@+id/guideTv"
+            android:layout_toRightOf="@+id/guideTv"
+            android:layout_marginLeft="10dp"
+            android:textColor="@color/black"/>
+
+        <TextView
+            android:id="@+id/priceTv"
+            android:text="Price:"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/guideTv"
+            android:layout_alignLeft="@+id/landmarkTv"
+            android:layout_marginTop="20dp"
+            android:textColor="@color/black"/>
+
+        <TextView
+            android:id="@+id/tour_price"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignBottom="@+id/priceTv"
+            android:layout_toRightOf="@+id/priceTv"
+            android:layout_marginLeft="10dp"
+            android:textColor="@color/black"/>
+
+        <TextView
+            android:id="@+id/timeTv"
+            android:text="Tour Time:"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/priceTv"
+            android:layout_alignLeft="@+id/landmarkTv"
+            android:layout_marginTop="20dp"
+            android:textColor="@color/black"/>
+
+
+        <TextView
+            android:id="@+id/start_time"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignBottom="@+id/timeTv"
+            android:layout_toRightOf="@+id/timeTv"
+            android:layout_marginLeft="10dp"
+            android:textColor="@color/black"/>
+
+        <TextView
+            android:id="@+id/summaryTv"
+            android:text="Tour Highlights:"
+            android:layout_alignLeft="@+id/landmarkTv"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/timeTv"
+            android:layout_marginTop="20dp"
+            android:textColor="@color/black"/>
+
+        <TextView
+            android:id="@+id/highlight1Tv"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/summaryTv"
+            android:layout_marginTop="10dp"
+            android:layout_marginLeft="50dp"
+            android:textColor="@color/black"
+            />
+
+        <TextView
+            android:id="@+id/highlight2Tv"
+            android:layout_alignLeft="@+id/highlight1Tv"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/highlight1Tv"
+            android:layout_marginTop="10dp"
+            android:textColor="@color/black"
+            />
+
+        <TextView
+            android:id="@+id/highlight3Tv"
+            android:layout_alignLeft="@+id/highlight1Tv"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/highlight2Tv"
+            android:layout_marginTop="10dp"
+            android:textColor="@color/black"
+            />
+
+    </RelativeLayout>
 
     <Button
         android:id="@+id/addBtn"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_gravity="center"
-        android:text="@string/tour"/>
+        android:text="@string/tour"
+        android:layout_marginBottom="70dp"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true" />
 
-</LinearLayout>
+</RelativeLayout>

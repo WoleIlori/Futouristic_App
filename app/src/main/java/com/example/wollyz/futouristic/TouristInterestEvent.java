@@ -1,5 +1,7 @@
 package com.example.wollyz.futouristic;
 
+import com.example.wollyz.futouristic.RestApiPOJO.TourNearby;
+
 /**
  * Created by Wollyz on 01/02/2018.
  */

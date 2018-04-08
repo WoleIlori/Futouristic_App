@@ -1,5 +1,7 @@
 package com.example.wollyz.futouristic;
 
+import com.example.wollyz.futouristic.RestApiPOJO.GuideSavedState;
+
 /**
  * Created by Wollyz on 27/02/2018.
  */

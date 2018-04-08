@@ -1,4 +1,4 @@
-package com.example.wollyz.futouristic;
+package com.example.wollyz.futouristic.RestApiPOJO;
 
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
@@ -19,7 +19,7 @@ public class TouristInterest {
     @Expose
     private String landmark;
 
-    @SerializedName("total_people")
+    @SerializedName("total")
     @Expose
     private int total_people;
 
@@ -61,7 +61,6 @@ public class TouristInterest {
     public void setTotalPeople(int total_people) {
         this.total_people = total_people;
     }
-
 
 }
 

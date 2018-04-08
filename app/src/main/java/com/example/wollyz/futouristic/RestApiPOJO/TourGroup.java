@@ -1,7 +1,10 @@
-package com.example.wollyz.futouristic;
+package com.example.wollyz.futouristic.RestApiPOJO;
 
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created by Wollyz on 01/03/2018.
@@ -27,12 +30,17 @@ public class TourGroup {
     @Expose
     private int interval;
 
+    @SerializedName("summary")
+    @Expose
+    private List<String> summary;
+
     public TourGroup(){
         username = "";
         landmark = "";
         groupSize = 0;
         price = 0;
         interval = 0;
+        summary = new ArrayList<String>();
 
 
     }
@@ -74,5 +82,13 @@ public class TourGroup {
 
     public int getInterval(){
         return interval;
+    }
+
+    public void setSummary(List<String> summary){
+        this.summary = summary;
+    }
+
+    public List<String> getSummary(){
+        return summary;
     }
 }

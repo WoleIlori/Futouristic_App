@@ -10,25 +10,80 @@
     tools:context="com.example.wollyz.futouristic.TourGroupStatusActivity">
 
     <TextView
+        android:id="@+id/status_title"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Tour Status"
+        android:textColor="@color/navyblue"
+        android:textSize="30sp"
+        android:layout_alignParentTop="true"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="50dp"
+        />
+
+    <TextView
+        android:id="@+id/att_header"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Attraction:"
+        android:layout_below="@+id/status_title"
+        android:layout_alignLeft="@+id/status_title"
+        android:layout_alignStart="@+id/status_title"
+        android:layout_marginTop="20dp" />
+
+    <TextView
         android:id="@+id/attractonTv"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content" />
+        android:layout_height="wrap_content"
+        android:text="The Spire"
+        android:layout_alignBottom="@+id/att_header"
+        android:layout_toRightOf="@+id/att_header"/>
+
+    <TextView
+        android:id="@+id/time_header"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Start Time:"
+        android:layout_below="@+id/att_header"
+        android:layout_alignLeft="@+id/att_header"
+        android:layout_marginTop="20dp"
+        />
 
     <TextView
         android:id="@+id/startTimeTv"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content" />
+        android:layout_height="wrap_content"
+        android:text="13:45"
+        android:layout_alignBottom="@+id/time_header"
+        android:layout_toRightOf="@+id/time_header"/>
 
+
+    <TextView
+        android:id="@+id/total_header"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Total Joined:"
+        android:layout_below="@+id/time_header"
+        android:layout_alignLeft="@+id/att_header"
+        android:layout_marginTop="20dp"
+        />
 
     <TextView
         android:id="@+id/totalJoinedTv"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content" />
+        android:layout_height="wrap_content"
+        android:text="15"
+        android:layout_alignBottom="@+id/total_header"
+        android:layout_toRightOf="@+id/total_header"/>
+
 
     <LinearLayout
-        android:layout_width="match_parent"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:orientation="horizontal">
+        android:layout_below="@+id/total_header"
+        android:layout_centerHorizontal="true"
+        android:orientation="horizontal"
+        android:layout_marginTop="20dp">
 
         <Button
             android:id="@+id/startTourBtn"
@@ -45,6 +100,7 @@
             />
 
     </LinearLayout>
+
 
 
 </RelativeLayout>

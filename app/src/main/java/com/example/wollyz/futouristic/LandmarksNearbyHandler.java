@@ -1,6 +1,7 @@
 package com.example.wollyz.futouristic;
 
-import android.content.Context;
+import com.example.wollyz.futouristic.RestApiPOJO.Attractions;
+import com.example.wollyz.futouristic.RestApiPOJO.NearbyAttraction;
 
 import java.util.List;
 
@@ -21,8 +22,8 @@ public class LandmarksNearbyHandler {
         attractionIndex = new int[HEAP_SIZE + 1];
     }
 
-    //CHANGE
-    public NearbyAttraction getNearestAttractions(double userLat,double userLong)
+
+    public NearbyAttraction getNearestAttractions(double userLat, double userLong)
     {
         String name;
         double dist;
@@ -32,7 +33,6 @@ public class LandmarksNearbyHandler {
         NearbyAttraction nearby = new NearbyAttraction();
 
         //calculating distance between user current location and all attractions
-
         for (int i = 0; i < allAttractions.size(); i++) {
             landmark_lat = allAttractions.get(i).getLatitude();
             landmark_long = allAttractions.get(i).getLongitude();
@@ -40,6 +40,7 @@ public class LandmarksNearbyHandler {
         }
 
         maxheap.EmptyHeap();
+
         //add distance to max heap
         for (int i = 0; i < distance.length; i++) {
             maxheap.insert(distance[i], i);
@@ -77,6 +78,5 @@ public class LandmarksNearbyHandler {
 
         return nearby;
     }
-
 
 }

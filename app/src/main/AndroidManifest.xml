@@ -47,7 +47,9 @@
             android:label="@string/title_activity_maps" />
         <activity android:name=".TourGroupStatusActivity" />
         <activity android:name=".TourPaymentActivity" />
-        <activity android:name=".PaymentDetails"></activity>
+        <activity android:name=".PaymentDetails" />
+        <activity android:name=".RegisterTouristActivity" />
+        <activity android:name=".RegisterGuideActivity"></activity>
     </application>
 
 </manifest>

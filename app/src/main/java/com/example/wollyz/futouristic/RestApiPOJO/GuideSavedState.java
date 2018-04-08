@@ -1,4 +1,4 @@
-package com.example.wollyz.futouristic;
+package com.example.wollyz.futouristic.RestApiPOJO;
 
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;

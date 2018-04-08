@@ -1,4 +1,4 @@
-package com.example.wollyz.futouristic;
+package com.example.wollyz.futouristic.RestApiPOJO;
 
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
@@ -28,6 +28,11 @@ public class TourNearby implements Serializable {
     @SerializedName("start_time")
     @Expose
     private String startTime;
+
+    @SerializedName("summary")
+    @Expose
+    private String summary;
+
 
 
 
@@ -69,6 +74,14 @@ public class TourNearby implements Serializable {
 
     public void setStartTime(String startTime) {
         this.startTime = startTime;
+    }
+
+    public String getSummary() {
+        return summary;
+    }
+
+    public void setSummary(String summary) {
+        this.summary = summary;
     }
 
 

@@ -12,44 +12,48 @@ import android.widget.Toast;
 import org.greenrobot.eventbus.Subscribe;
 
 public class LoginActivity extends AppCompatActivity {
-
     private String userType;
     private ApiClient client;
     private EditText usernameEditText;
     private EditText passwordEditText;
+    private Intent registerIntent;
     @Override
     protected void onCreate(Bundle savedInstanceState){
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
         client = new ApiClient(this);
-        userType = "";
+        //userType = getIntent().getStringExtra("LOGIN_USER");
         usernameEditText = (EditText) findViewById(R.id.username_edittext);
         passwordEditText = (EditText) findViewById(R.id.password_edittext);
-        RadioButton guideRadioBtn = (RadioButton) findViewById(R.id.guide);
-        RadioButton touristRadioBtn = (RadioButton) findViewById(R.id.tourist);
         Button loginBtn = (Button) findViewById(R.id.login);
+        Button registerBtn = (Button) findViewById(R.id.signup);
 
-        View.OnClickListener touristListen = new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                userType = "tourist";
-            }
-        };
-
-        View.OnClickListener guideListen = new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                userType = "guide";
-            }
-        };
-
-        guideRadioBtn.setOnClickListener(guideListen);
-        touristRadioBtn.setOnClickListener(touristListen);
 
         loginBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                client.getUserLoginInfo(usernameEditText.getText().toString(), passwordEditText.getText().toString(), userType);
+                if(formError()== 0){
+                    client.getUserLoginInfo(usernameEditText.getText().toString(), passwordEditText.getText().toString(), userType);
+                }
+                else
+                {
+                    Toast.makeText(getApplicationContext(),"Please enter username and password",Toast.LENGTH_LONG).show();
+                }
+
+            }
+        });
+
+        registerBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if(userType.equals("tourist")){
+                    registerIntent= new Intent(view.getContext(),RegisterTouristActivity.class);
+                }
+                else
+                {
+                    registerIntent = new Intent(view.getContext(),RegisterGuideActivity.class);
+                }
+                startActivity(registerIntent);
             }
         });
 
@@ -59,6 +63,9 @@ public class LoginActivity extends AppCompatActivity {
     @Override
     public void onResume(){
         super.onResume();
+        if(userType == null){
+            userType = getIntent().getStringExtra("LOGIN_USER");
+        }
         BusProvider.getInstance().register(this);
     }
 
@@ -72,25 +79,40 @@ public class LoginActivity extends AppCompatActivity {
     @Subscribe
     public void onLoginEvent(ResponseEvent serverResponse){
         Intent intent;
+        Bundle extras = new Bundle();
 
-        if(userType == "tourist"){
-            intent = new Intent(this,TouristMainActivity.class);
-            intent.putExtra("username",usernameEditText.getText().toString());
-        }
-        else
-        {
-            intent = new Intent(this,GuideMainActivity.class);
-            intent.putExtra("username", usernameEditText.getText().toString());
-        }
+        if(serverResponse.getResponseMessage().equals("true")){
+            if(userType.equals("tourist")){
+                intent = new Intent(this,TouristMainActivity.class);
+                extras.putString("TOURIST_USERNAME",usernameEditText.getText().toString());
+                intent.putExtras(extras);
+                startActivity(intent);
+            }
 
-        if(serverResponse.getResponseMessage() == "true"){
-            startActivity(intent);
+            if(userType.equals("guide"))
+            {
+                intent = new Intent(this,GuideMainActivity.class);
+                extras.putString("GUIDE_USERNAME",usernameEditText.getText().toString());
+                intent.putExtras(extras);
+                startActivity(intent);
+            }
         }
         else {
             Toast.makeText(getApplicationContext(), "Incorrect username or password",Toast.LENGTH_SHORT).show();
         }
 
 
+    }
+
+    private int formError() {
+        int errorCounter = 0;
+        if (usernameEditText.getText().toString().isEmpty()) {
+            errorCounter++;
+        }
+        if (passwordEditText.getText().toString().isEmpty()) {
+            errorCounter++;
+        }
+        return errorCounter;
     }
 
     @Subscribe

@@ -1,4 +1,4 @@
-package com.example.wollyz.futouristic;
+package com.example.wollyz.futouristic.RestApiPOJO;
 
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
@@ -20,6 +20,11 @@ public class TouristSavedState {
     @SerializedName("price")
     @Expose
     private float price;
+
+
+    @SerializedName("payment_status")
+    @Expose
+    private String paymentStatus;
 
 
     public String getGuide() {
@@ -53,5 +58,13 @@ public class TouristSavedState {
 
     public void setPrice(float price) {
         this.price = price;
+    }
+
+    public String getPaymentStatus() {
+        return paymentStatus;
+    }
+
+    public void setPaymentStatus(String paymentStatus) {
+        this.paymentStatus = paymentStatus;
     }
 }

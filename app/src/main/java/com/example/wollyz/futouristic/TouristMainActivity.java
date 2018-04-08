@@ -1,6 +1,7 @@
 package com.example.wollyz.futouristic;
 
 import android.Manifest;
+import android.app.Activity;
 import android.app.Notification;
 import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
@@ -24,6 +25,11 @@ import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.Toast;
 
+import com.example.wollyz.futouristic.RestApiPOJO.Attractions;
+import com.example.wollyz.futouristic.RestApiPOJO.NearbyAttraction;
+import com.example.wollyz.futouristic.RestApiPOJO.TourNearby;
+import com.example.wollyz.futouristic.RestApiPOJO.TouristSavedState;
+import com.example.wollyz.futouristic.RestApiPOJO.TouristStatus;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
 
@@ -38,25 +44,24 @@ public class TouristMainActivity extends AppCompatActivity {
     public List<Attractions> attractions;
     private NearbyAttraction nearby;
     private LandmarksNearbyHandler locHandler;
-    private static final int REQUIRED_AMT = 3;
-    private ArrayList<String> notify_landmarks;
     private String username;
-    private String touristUser;
     private final String EMPTY_STRING = "";
     private NotificationUtils notificationUtils;
     private EditText totalPeople;
     private Button viewMapBtn;
     private Button leaveTourBtn;
     private Button payTourBtn;
+    private Button logoutBtn;
     private float tourPrice;
     private int total_people;
-    private Attractions selectedAttraction;
-    private String guide_username;
+    private final int REQUEST_CODE_PAYMENT = 7;
+    public static Attractions selectedAttraction;
+    public static String guide_username;
     private List<TourNearby> availableTours;
     private SwitchCompat findTour;
     private boolean alreadyStartedService;
+    private boolean paid;
     private static final int LOCATION_PERMISSION = 3;
-    private Location lastLocation;
 
 
 
@@ -65,18 +70,17 @@ public class TouristMainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_tourist_main);
         Toast.makeText(this, "this is tourist main page", Toast.LENGTH_SHORT).show();
-        username = getIntent().getExtras().getString("USERNAME");
-        touristUser = getIntent().getExtras().getString("TOURIST_USER");
+        username = getIntent().getExtras().getString("TOURIST_USERNAME");
         totalPeople = (EditText) findViewById(R.id.total_people);
         findTour = (SwitchCompat) findViewById(R.id.findTour);
         viewMapBtn = (Button)findViewById(R.id.mapBtn);
         leaveTourBtn = (Button)findViewById(R.id.leaveTourBtn);
         payTourBtn = (Button)findViewById(R.id.payTourBtn);
+        logoutBtn = (Button)findViewById(R.id.touristLogoutBtn);
         nearby = new NearbyAttraction();
         alreadyStartedService = false;
-        notify_landmarks = new ArrayList<String>();
+        paid = false;
         notificationUtils = new NotificationUtils(this);
-        lastLocation = new Location("");
         client = new ApiClient(this);
         availableTours = new ArrayList<TourNearby>();
         callBroadcastManager();
@@ -91,15 +95,8 @@ public class TouristMainActivity extends AppCompatActivity {
         viewMapBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                //Attractions selectedAttraction;
+                //Pass selected attraction and guide if tourist has joined a tour
                 Intent mapIntent = new Intent(view.getContext(), MapsActivity.class);
-                if(NotifyTouristActivity.attraction!=null && NotifyTouristActivity.guide_username!=null) {
-                    Bundle extra = new Bundle();
-                    extra.putSerializable("SELECTED_LANDMARK", NotifyTouristActivity.attraction);
-                    extra.putString("GUIDE", NotifyTouristActivity.guide_username);
-                    mapIntent.putExtras(extra);
-
-                }
                 if(selectedAttraction!=null && guide_username!=null) {
 
                     Bundle extra = new Bundle();
@@ -117,8 +114,8 @@ public class TouristMainActivity extends AppCompatActivity {
         leaveTourBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                //Attractions selectedAttraction = NotifyTouristActivity.attraction;
-                if(selectedAttraction!=null || NotifyTouristActivity.attraction!=null ){
+                //if tourist has already joined a tour, prompt to confirm action
+                if(selectedAttraction!=null){
                     createDialog(R.string.alert,"Leave Tour");
 
                 }
@@ -131,20 +128,25 @@ public class TouristMainActivity extends AppCompatActivity {
         findTour.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton compoundButton, boolean isChecked) {
+                //checks if tourists has entered total number of accompanies, including theirselves
                 if(isChecked) {
                     if(totalPeople.getText().toString().isEmpty()){
                         Toast.makeText(getApplicationContext(), "Please enter total number of people", Toast.LENGTH_SHORT).show();
                         compoundButton.toggle();
                     }
                     else {
+                        //the app begins to monitor user location to find nearest tours
                         total_people = Integer.parseInt(totalPeople.getText().toString());
                         checkGooglePlayService();
 
                     }
 
                 }
-                else {
-
+                else
+                {
+                    //when tourist toggles slider off, stop monitoring their location
+                    stopService(new Intent(compoundButton.getContext(),LocationService.class));
+                    alreadyStartedService = false;
                 }
             }
         });
@@ -153,17 +155,62 @@ public class TouristMainActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 Intent paymentIntent = new Intent(view.getContext(), TourPaymentActivity.class);
-                if(NotifyTouristActivity.attraction != null){
-                    paymentIntent.putExtra("TOUR_AMT", NotifyTouristActivity.price);
-                    startActivity(paymentIntent);
-                }
-                else if(selectedAttraction != null)
+                if(selectedAttraction != null && !paid)
                 {
+
                     paymentIntent.putExtra("TOUR_AMT", tourPrice);
-                    startActivity(paymentIntent);
+                    paymentIntent.putExtra("PAYER",username);
+                    startActivityForResult(paymentIntent,REQUEST_CODE_PAYMENT);
+
+                }
+                else
+                {
+                    Toast.makeText(getApplicationContext(), "You have not joined a tour", Toast.LENGTH_SHORT).show();
                 }
             }
         });
+
+        logoutBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if(!alreadyStartedService){
+                    finishAffinity();
+                    Intent intent = new Intent(view.getContext(),MainActivity.class);
+                    startActivity(intent);
+                }
+                else
+                {
+                    Toast.makeText(getApplicationContext(), "Please toggle slider off first", Toast.LENGTH_SHORT).show();
+                }
+
+
+            }
+        });
+
+    }
+
+
+    //send notification to tourists to when payment is successfull
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data){
+        switch(requestCode){
+            case(REQUEST_CODE_PAYMENT):{
+                if(resultCode == Activity.RESULT_OK){
+                    Bundle extras = data.getExtras();
+                    if (extras != null) {
+                        int hasPaid = extras.getInt("PAY_STATUS");
+                        String paymentDetails = extras.getString("PAY_MSG");
+                        if(hasPaid == 1){
+                            paid = true;
+                            sendPaymentConfirmation(paymentDetails);
+                        }
+
+                    }
+
+                }
+                break;
+            }
+        }
 
     }
 
@@ -212,13 +259,12 @@ public class TouristMainActivity extends AppCompatActivity {
                         double lat = intent.getDoubleExtra(LocationService.LATITUDE,0);
                         double lng = intent.getDoubleExtra(LocationService.LONGITUDE,0);
                         findNearestAttractions(lat,lng);
-                        Toast.makeText(getApplicationContext(),"Tourist location:"+lat+","+lng,Toast.LENGTH_LONG).show();
-
                     }
                 },new IntentFilter(LocationService.ACTION_LOCATION_BROADCAST)
         );
     }
 
+    //receiving all the attraction
     @Subscribe
     public void onGetAllAttractionsEvent(AttractionsReceivedEvent serverEvent){
         attractions = serverEvent.getAttraction();
@@ -238,6 +284,9 @@ public class TouristMainActivity extends AppCompatActivity {
             selectedAttraction = attractions.get(index);
             guide_username = savedState.getGuide();
             tourPrice = savedState.getPrice();
+            if(savedState.getPaymentStatus().equals("Yes")){
+                paid = true;
+            }
         }
 
     }
@@ -265,15 +314,16 @@ public class TouristMainActivity extends AppCompatActivity {
         String message = serverEvent.getResponseMessage();
 
         Log.d("ON","Checking tourist available....");
+        //retrieve tourists' status from database, if they are available or not
         client.getTouristStatus(username);
 
-        //check if tourist is available *NEW
 
     }
 
     @Subscribe
     public void onGetTouristStatusEvent(TouristStatusEvent serverEvent){
         TouristStatus touristStatus = serverEvent.getTouristStatus();
+        //If they are available look for tours nearby
         if(touristStatus.getStatus().equals("available") && nearby != null){
 
             client.getToursNearby(nearby.getAttractions(),total_people);
@@ -282,9 +332,14 @@ public class TouristMainActivity extends AppCompatActivity {
 
     @Subscribe
     public void onGetToursNearbyEvent(TourNearbyEvent event){
-        int error_check = 0; //checks if they were tours sent back from server
+        int error_check = 0;
         List<TourNearby> returnedTours = event.getToursNearby();
         String tour;
+
+        //clear available tours array list
+        availableTours.clear();
+
+        //checks if they were non-empty tours returned from server
         if(returnedTours != null){
 
             for(int i = 0; i < returnedTours.size(); i++){
@@ -297,7 +352,7 @@ public class TouristMainActivity extends AppCompatActivity {
                 }
             }
 
-
+            //if some tours are available notify to tourists
             if(error_check != returnedTours.size()){
                 notifyLandmarkToTourist();
             }
@@ -400,7 +455,6 @@ public class TouristMainActivity extends AppCompatActivity {
 
     private void startLocationService(){
         if(!alreadyStartedService){
-            //LocationService.setActivityContext(this);
             Intent intent = new Intent(this, LocationService.class);
             startService(intent);
             alreadyStartedService = true;
@@ -427,9 +481,6 @@ public class TouristMainActivity extends AppCompatActivity {
         extras.putSerializable("ALL_LANDMARKS",(Serializable)attractions);
         resultIntent.putExtras(extras);
 
-        //TaskStackBuilder stackBuilder = TaskStackBuilder.create(this);
-        //stackBuilder.addParentStack(NotifyLandmarksActivity.class);
-        //stackBuilder.addNextIntent(resultIntent);
         PendingIntent contentIntent = PendingIntent.getActivity(this,
                 0,
                 resultIntent,
@@ -438,6 +489,17 @@ public class TouristMainActivity extends AppCompatActivity {
         notification = notificationUtils.buildNotification(builder);
         notificationUtils.notifyTourist(notificationID, notification);
 
+    }
+
+    private void sendPaymentConfirmation(String paymentInfo){
+        NotificationCompat.Builder builder;
+        Notification notification;
+        int notificationID = 6;
+        String title = "Payment Confirmed";
+        String text = paymentInfo;
+        builder = notificationUtils.createNotificationBuilder(title, text);
+        notification = notificationUtils.buildNotification(builder);
+        notificationUtils.notifyTourist(notificationID, notification);
     }
 
 

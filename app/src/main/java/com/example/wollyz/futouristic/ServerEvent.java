@@ -1,5 +1,7 @@
 package com.example.wollyz.futouristic;
 
+import com.example.wollyz.futouristic.RestApiPOJO.Attractions;
+
 import java.util.List;
 
 /**

@@ -20,6 +20,11 @@ import android.widget.Button;
 import android.widget.CompoundButton;
 import android.widget.Toast;
 
+import com.example.wollyz.futouristic.RestApiPOJO.Attractions;
+import com.example.wollyz.futouristic.RestApiPOJO.GuideLocation;
+import com.example.wollyz.futouristic.RestApiPOJO.GuideSavedState;
+import com.example.wollyz.futouristic.RestApiPOJO.GuideSelection;
+import com.example.wollyz.futouristic.RestApiPOJO.TourGroupStatus;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
 
@@ -43,16 +48,15 @@ public class GuideMainActivity extends AppCompatActivity {
     private final String EMPTY_STRING = "";
     private Button groupCreateBtn;
     private Button viewGroupBtn;
+    private Button logoutBtn;
     private final int REQUEST_CODE_LIST = 1;
     private final int REQUEST_CODE_FORM = 2;
     private ArrayList<String> chosenLandmarks;
     private List<Integer> chosenLandmarksIndex;
     private List<Double> chosenLandmarkDist;
-    private String guideUser;
     private SwitchCompat tourToggle;
-    private String tourLandmark; //stores landmark guide decides to do
+    private String tourLandmark; //stores landmarks guide decides to doa tour on
     private Intent listIntent;
-    //private Intent formIntent;
     private String status;
     private boolean alreadyStartedService;
     private static final int LOCATION_PERMISSION = 5;
@@ -64,18 +68,17 @@ public class GuideMainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_guide_main);
         Toast.makeText(this, "this is guide main page", Toast.LENGTH_SHORT).show();
         client = new ApiClient(this);
-        username = getIntent().getExtras().getString("USERNAME");
-        guideUser = getIntent().getExtras().getString("GUIDE_USER");
+        username = getIntent().getExtras().getString("GUIDE_USERNAME");
         selBtn = (Button)findViewById(R.id.guide_selection);
         groupCreateBtn = (Button) findViewById(R.id.createGroup);
         viewGroupBtn = (Button)findViewById(R.id.viewGroupBtn);
+        logoutBtn = (Button)findViewById(R.id.guideLogoutBtn);
         tourToggle = (SwitchCompat) findViewById(R.id.tourToggle);
         landmarks = new ArrayList<String>();
         chosenLandmarks = new ArrayList<String>();
         chosenLandmarksIndex = new ArrayList<Integer>();
         chosenLandmarkDist = new ArrayList<Double>();
         listIntent = new Intent(this, GuideLandmarkSelectionActivity.class);
-        //formIntent = new Intent(this, CreateTourGroupActivity.class);
         tourLandmark = EMPTY_STRING;
         status = EMPTY_STRING;
         alreadyStartedService = false;
@@ -177,6 +180,16 @@ public class GuideMainActivity extends AppCompatActivity {
             }
         });
 
+        logoutBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                finishAffinity();
+                Intent intent = new Intent(view.getContext(),MainActivity.class);
+                startActivity(intent);
+
+            }
+        });
+
 
     }
     @Override
@@ -271,7 +284,7 @@ public class GuideMainActivity extends AppCompatActivity {
     public void onCreateGroupEvent(ResponseEvent responseEvent){
 
         if(responseEvent.getResponseMessage().matches("inserted"));{
-            Toast.makeText(getApplicationContext(), "Tour Group Created", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Tour Group Created", Toast.LENGTH_SHORT).show();
         }
 
 
@@ -279,10 +292,11 @@ public class GuideMainActivity extends AppCompatActivity {
 
     @Subscribe
     public void onAddGuideLocationEvent(ResponseEvent responseEvent){
-        if(responseEvent.getResponseMessage().matches("success"));{
-            Toast.makeText(getApplicationContext(), "Guide location added to database", Toast.LENGTH_SHORT).show();
-        }
+
     }
+
+
+
 
     public void ToggleoffAlert(){
         DialogInterface.OnClickListener dialogClickListener = new DialogInterface.OnClickListener() {
@@ -387,7 +401,6 @@ public class GuideMainActivity extends AppCompatActivity {
                     public void onReceive(Context context, Intent intent) {
                         double lat = intent.getDoubleExtra(LocationService.LATITUDE,0);
                         double lng = intent.getDoubleExtra(LocationService.LONGITUDE,0);
-                        Toast.makeText(getApplicationContext(),"Guide location:"+lat+","+lng,Toast.LENGTH_LONG).show();
                         guideLocation.setLatitude(lat);
                         guideLocation.setLongitude(lng);
                         client.insertGuideCurrentLocation(guideLocation);

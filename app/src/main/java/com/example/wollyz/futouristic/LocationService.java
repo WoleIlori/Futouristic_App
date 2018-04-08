@@ -44,7 +44,6 @@ public class LocationService extends Service implements
 
     @Override
     public int onStartCommand(Intent intent,int flags, int startId){
-        Log.d("Location Tracker", "Service Started");
         locationClient = new GoogleApiClient.Builder(this)
                 .addConnectionCallbacks(this)
                 .addOnConnectionFailedListener(this)
@@ -73,7 +72,6 @@ public class LocationService extends Service implements
         int coarsePermissionChk = ActivityCompat.checkSelfPermission(this,Manifest.permission.ACCESS_COARSE_LOCATION);
 
         if(finePermissionChk != PackageManager.PERMISSION_GRANTED && coarsePermissionChk != PackageManager.PERMISSION_GRANTED ) {
-            //requestPermission(new String[]{Manifest.permission.ACCESS_COARSE_LOCATION,Manifest.permission.ACCESS_FINE_LOCATION},LOCATION_REQUEST_CODE);
             return;
         }
         Log.d("Location Tracker", "Enable tracker");
@@ -113,17 +111,18 @@ public class LocationService extends Service implements
     }
 
     @Override
-    public void onLocationChanged(Location location){
-        if(location != null){
-            sendMessageToUI(location.getLatitude(), location.getLongitude());
-        }
-    }
-
-    @Override
     public void onDestroy(){
         LocationServices.FusedLocationApi.removeLocationUpdates(locationClient,this);
         Log.d("TRACKING","Location tracking stopped...");
         super.onDestroy();
+    }
+
+
+    @Override
+    public void onLocationChanged(Location location){
+        if(location != null){
+            sendMessageToUI(location.getLatitude(), location.getLongitude());
+        }
     }
 
     private void sendMessageToUI(double lat, double lng){

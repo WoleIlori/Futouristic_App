@@ -1,5 +1,13 @@
 package com.example.wollyz.futouristic;
 
+import com.example.wollyz.futouristic.RestApiPOJO.Attractions;
+import com.example.wollyz.futouristic.RestApiPOJO.GuideLocation;
+import com.example.wollyz.futouristic.RestApiPOJO.GuideSavedState;
+import com.example.wollyz.futouristic.RestApiPOJO.TourGroupStatus;
+import com.example.wollyz.futouristic.RestApiPOJO.TourNearby;
+import com.example.wollyz.futouristic.RestApiPOJO.TouristSavedState;
+import com.example.wollyz.futouristic.RestApiPOJO.TouristStatus;
+
 import java.util.List;
 
 import retrofit2.Call;
@@ -106,6 +114,23 @@ public interface ApiInterface {
     Call<String> endTourInstance(
             @Query("username") String guideUsername,
             @Query("landmark") String landmark
+    );
+
+    @PUT("tourpaid")
+    Call<String> updatePaymentStatus(
+            @Query("username") String touristUsername
+    );
+
+    @Headers("Content-Type: application/json")
+    @POST("registerguide")
+    Call<String> registerGuide(
+            @Body Object guideInfo
+    );
+
+    @Headers("Content-Type: application/json")
+    @POST("registertourist")
+    Call<String> registerTourist(
+            @Body Object touristInfo
     );
 
 

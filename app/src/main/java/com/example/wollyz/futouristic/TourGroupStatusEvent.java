@@ -1,5 +1,7 @@
 package com.example.wollyz.futouristic;
 
+import com.example.wollyz.futouristic.RestApiPOJO.TourGroupStatus;
+
 /**
  * Created by Wollyz on 16/03/2018.
  */

@@ -9,47 +9,76 @@
     android:paddingTop="@dimen/activity_vertical_margin"
     tools:context="com.example.wollyz.futouristic.GuideMainActivity">
 
+    <TextView
+        android:id="@+id/logo_title2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="FUTOURISTIC"
+        android:textSize="30sp"
+        android:textColor="@color/navyblue"
+        android:layout_alignParentTop="true"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="10dp"/>
+
     <android.support.v7.widget.SwitchCompat
         android:id="@+id/tourToggle"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Do Tour"
-        android:layout_alignParentTop="true"
-        android:layout_alignParentRight="true"
-        android:layout_alignParentEnd="true"
-        android:layout_marginRight="59dp"
-        android:layout_marginEnd="59dp" />
-
-    <Button
-        android:id="@+id/guide_selection"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center"
-        android:text="Select Landmarks"
-        android:layout_below="@+id/tourToggle"
+        android:layout_below="@+id/logo_title2"
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true"
-        android:layout_marginTop="57dp" />
+        android:layout_marginTop="20dp"/>
 
-
-
-    <Button
-        android:id="@+id/createGroup"
+    <LinearLayout
+        android:layout_marginTop="40dp"
+        android:layout_centerHorizontal="true"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Create tour group"
-        android:layout_marginTop="44dp"
-        android:layout_below="@+id/guide_selection"
-        android:layout_alignLeft="@+id/viewGroupBtn"
-        android:layout_alignStart="@+id/viewGroupBtn" />
+        android:layout_below="@+id/tourToggle"
+        android:orientation="vertical">
 
-    <Button
-        android:id="@+id/viewGroupBtn"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="View Tour Group Status"
-        android:layout_marginTop="50dp"
-        android:layout_below="@+id/createGroup"
-        android:layout_toLeftOf="@+id/tourToggle"
-        android:layout_toStartOf="@+id/tourToggle" />
+
+        <Button
+            android:id="@+id/guide_selection"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Select Landmarks"
+            android:layout_gravity="center_horizontal"
+            />
+
+
+
+        <Button
+            android:id="@+id/createGroup"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Create tour group"
+            android:layout_marginTop="15dp"
+            android:layout_gravity="center_horizontal"
+
+            />
+
+        <Button
+            android:id="@+id/viewGroupBtn"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="View Tour Group Status"
+            android:layout_marginTop="15dp"
+            android:layout_gravity="center_horizontal"
+
+            />
+
+        <Button
+            android:id="@+id/guideLogoutBtn"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Logout"
+            android:layout_marginTop="15dp"
+            android:layout_gravity="center_horizontal"
+
+            />
+
+    </LinearLayout>
+
 </RelativeLayout>

@@ -37,6 +37,7 @@ public class NotificationUtils extends ContextWrapper {
         mBuilder.setSmallIcon(getSmallIcon());
         mBuilder.setAutoCancel(true);
         mBuilder.setPriority(Notification.PRIORITY_HIGH);
+        mBuilder.setDefaults(Notification.DEFAULT_SOUND);
         return mBuilder;
 
     }
@@ -59,6 +60,7 @@ public class NotificationUtils extends ContextWrapper {
     private int getSmallIcon(){
         return android.R.drawable.ic_dialog_map;
     }
+
 
 
 

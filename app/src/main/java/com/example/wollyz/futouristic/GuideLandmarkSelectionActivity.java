@@ -23,7 +23,6 @@ import okhttp3.Response;
 public class GuideLandmarkSelectionActivity extends ListActivity {
     private ApiClient client;
     private ArrayList<String> allLandmarks;
-    private String username;
     private ArrayList<String> chosenLandmarks;
     private ArrayList<Integer> chosenLandmarksIndex;
 
@@ -37,7 +36,6 @@ public class GuideLandmarkSelectionActivity extends ListActivity {
         Bundle var = new Bundle();
         var = getIntent().getExtras();
         allLandmarks = var.getStringArrayList("LANDMARKS");
-        //username = var.getString("USERNAME");
         chosenLandmarks = new ArrayList<String>();
         chosenLandmarksIndex = new ArrayList<Integer>();
         ListView lv = getListView();

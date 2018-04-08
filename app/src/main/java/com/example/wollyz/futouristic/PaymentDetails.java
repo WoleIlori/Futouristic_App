@@ -22,7 +22,7 @@ public class PaymentDetails extends AppCompatActivity {
         txtStatus = (TextView)findViewById(R.id.txtStatus);
         client = new ApiClient(this);
 
-        //
+
         Intent intent = getIntent();
         try{
             JSONObject jsonObject = new JSONObject(intent.getStringExtra("PaymentDetails"));

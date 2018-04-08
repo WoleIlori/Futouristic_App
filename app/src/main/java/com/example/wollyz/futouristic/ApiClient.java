@@ -2,6 +2,19 @@ package com.example.wollyz.futouristic;
 
 import android.content.Context;
 
+import com.example.wollyz.futouristic.RestApiPOJO.Attractions;
+import com.example.wollyz.futouristic.RestApiPOJO.GuideLocation;
+import com.example.wollyz.futouristic.RestApiPOJO.GuideSavedState;
+import com.example.wollyz.futouristic.RestApiPOJO.GuideSelection;
+import com.example.wollyz.futouristic.RestApiPOJO.NearbyAttraction;
+import com.example.wollyz.futouristic.RestApiPOJO.RegisterGuide;
+import com.example.wollyz.futouristic.RestApiPOJO.RegisterTourist;
+import com.example.wollyz.futouristic.RestApiPOJO.TourGroup;
+import com.example.wollyz.futouristic.RestApiPOJO.TourGroupStatus;
+import com.example.wollyz.futouristic.RestApiPOJO.TourNearby;
+import com.example.wollyz.futouristic.RestApiPOJO.TouristInterest;
+import com.example.wollyz.futouristic.RestApiPOJO.TouristSavedState;
+import com.example.wollyz.futouristic.RestApiPOJO.TouristStatus;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
@@ -38,10 +51,8 @@ import retrofit2.converter.gson.GsonConverterFactory;
 //FOR GOOGLE MAP CREATE ANOTHER RETROFIT CLIENT CLASS
 // AFTER RETRIEVING KEY SAVE IN RAW FOLDER
 public class ApiClient {
-
     //netstat -an | find "LISTEN" to find ip address in xampp
-    private static final String BASE_URL = "https://192.168.1.11/futouristicapi/v1/";
-
+    private static final String BASE_URL = "https://192.168.1.3/futouristicapi/v1/";
     private static Retrofit retrofit = null;
     private List<Attractions> attractions;
     private String[] names;
@@ -67,10 +78,8 @@ public class ApiClient {
                 .setLenient()
                 .create();
 
-
         retrofit = new Retrofit.Builder()
                 .baseUrl(BASE_URL)
-                //.addConverterFactory(ScalarsConverterFactory.create())
                 .addConverterFactory(GsonConverterFactory.create(gson))
                 .client(httpClient.build())
                 .build();
@@ -124,6 +133,7 @@ public class ApiClient {
 
     }
 
+    //Getting all attractions from the database
     public void getAttractions(){
 
         ApiInterface apiService = retrofit.create(ApiInterface.class);
@@ -144,13 +154,8 @@ public class ApiClient {
         });
     }
 
+    //inserting into the database, the attractions near tourists
     public void postLandmarksNearTourist(NearbyAttraction nearby){
-        //Field parameters
-        //String username = nearby.getUsername();
-        //List<String> attractions = nearby.getAttractions();
-        //List<Double> distances = nearby.getDistances();
-
-
         ApiInterface apiService = retrofit.create(ApiInterface.class);
 
         Call<String> call = apiService.addNearbyAttractions(nearby);
@@ -168,29 +173,12 @@ public class ApiClient {
             }
         });
 
-    /*
-        else
-        {
-            Call<String> call = apiService.updateTouristLocation(nearby.getAttractions(),nearby.getDistances(),nearby.getUsername());
-            call.enqueue(new Callback<String>() {
-                @Override
-                public void onResponse(Call<String> call, Response<String> response) {
-                    BusProvider.getInstance().post(new ResponseEvent(response.message()));
-                }
-
-                @Override
-                public void onFailure(Call<String> call, Throwable t) {
-                    BusProvider.getInstance().post(new ErrorEvent(-2,t.getMessage()));
-
-                }
-            });
-        }
-        */
 
 
     }
 
 
+    //retrieving all tours near tourists
     public void getToursNearby(List<String> nearbyLandmarks, int total_people){
         ApiInterface apiService = retrofit.create(ApiInterface.class);
         Call<List<TourNearby>> call = apiService.getToursNearby(nearbyLandmarks, total_people);
@@ -210,6 +198,7 @@ public class ApiClient {
     }
 
 
+    //adding tourists that have joined a tour into the database
     public void addTouristToTourGroup(TouristInterest touristInterest){
         ApiInterface apiService = retrofit.create(ApiInterface.class);
         Call<String> call = apiService.addTouristToTourGroup(touristInterest);
@@ -228,10 +217,11 @@ public class ApiClient {
         });
     }
 
+    //getting login credentials of tourists or guides, to check if presented credentials is valid
     public void getUserLoginInfo(String username, String password, String userType){
         ApiInterface apiService = retrofit.create(ApiInterface.class);
 
-        if(userType == "tourist"){
+        if(userType.equals("tourist")){
             Call<String> call = apiService.getTouristLoginInfo(username,password);
 
             call.enqueue(new Callback<String>() {
@@ -248,7 +238,7 @@ public class ApiClient {
             });
         }
 
-        if(userType == "guide"){
+        if(userType.equals("guide")){
             Call<String> call = apiService.getGuideLoginInfo(username,password);
             call.enqueue(new Callback<String>() {
                 @Override
@@ -266,7 +256,7 @@ public class ApiClient {
 
     }
 
-
+    //adding the attractions that guides have chosen to do tours on
     public void postGuideLandmarkSelection(GuideSelection guideSelection){
         ApiInterface apiService = retrofit.create(ApiInterface.class);
         Call<String> call = apiService.addGuideLandmarkSelection(guideSelection);
@@ -285,6 +275,7 @@ public class ApiClient {
         });
     }
 
+    //inserting the ads created by guides, tour ads are implemented as tour groups
     public void createGuideTourGroup(TourGroup tourGroup){
         ApiInterface apiService = retrofit.create(ApiInterface.class);
         Call<String> call = apiService.createGuideTourGroup(tourGroup);
@@ -303,6 +294,8 @@ public class ApiClient {
         });
 
     }
+
+    //updating the status of tour group to available, when available the tour group or ad is notified to tourists
     public void setGroupToAvailable(String guideUsername, String landmark){
         ApiInterface apiService = retrofit.create(ApiInterface.class);
         Call<String> call = apiService.setGroupToAvailable(guideUsername,landmark);
@@ -322,6 +315,7 @@ public class ApiClient {
 
     }
 
+    //upate tour group status to unavailable, when unavailable this is notified to tourists
     public void setGroupToUnavailable(String guideUsername, String landmark){
         ApiInterface apiService = retrofit.create(ApiInterface.class);
         Call<String> call = apiService.setGroupToUnavailable(guideUsername,landmark);
@@ -341,6 +335,7 @@ public class ApiClient {
 
     }
 
+    //retrieving guides' choices of attractions and attraction chosen to do a tour on
     public void getGuideSavedSelection(String guideUsername){
         ApiInterface apiService = retrofit.create(ApiInterface.class);
         Call<GuideSavedState> call = apiService.getGuideSavedState(guideUsername);
@@ -360,6 +355,8 @@ public class ApiClient {
     }
 
 
+    //retrieve tours that tourists have joined and payment status for the tour
+    //used to remind tourists of the tour and pending payment
     public void getTouristSavedState(String touristUsername){
         ApiInterface apiService = retrofit.create(ApiInterface.class);
         Call<TouristSavedState> call = apiService.getTouristSavedState(touristUsername);
@@ -486,4 +483,60 @@ public class ApiClient {
             }
         });
     }
+
+
+    public void updateTouristPaymentStatus(String touristUsername){
+        ApiInterface apiService = retrofit.create(ApiInterface.class);
+        Call<String> call = apiService.updatePaymentStatus(touristUsername);
+
+        call.enqueue(new Callback<String>() {
+            @Override
+            public void onResponse(Call<String> call, Response<String> response) {
+                BusProvider.getInstance().post(new ResponseEvent(response.body()));
+            }
+
+            @Override
+            public void onFailure(Call<String> call, Throwable t) {
+                BusProvider.getInstance().post(new ErrorEvent(-2,t.getMessage()));
+
+            }
+        });
+    }
+
+    public void createGuideAccount(RegisterGuide guide){
+        ApiInterface apiService = retrofit.create(ApiInterface.class);
+        Call<String> call = apiService.registerGuide(guide);
+
+        call.enqueue(new Callback<String>() {
+            @Override
+            public void onResponse(Call<String> call, Response<String> response) {
+                BusProvider.getInstance().post(new ResponseEvent(response.body()));
+            }
+
+            @Override
+            public void onFailure(Call<String> call, Throwable t) {
+                BusProvider.getInstance().post(new ErrorEvent(-2,t.getMessage()));
+
+            }
+        });
+    }
+
+    public void createTouristAccount(RegisterTourist tourist){
+        ApiInterface apiService = retrofit.create(ApiInterface.class);
+        Call<String> call = apiService.registerTourist(tourist);
+
+        call.enqueue(new Callback<String>() {
+            @Override
+            public void onResponse(Call<String> call, Response<String> response) {
+                BusProvider.getInstance().post(new ResponseEvent(response.body()));
+            }
+
+            @Override
+            public void onFailure(Call<String> call, Throwable t) {
+                BusProvider.getInstance().post(new ErrorEvent(-2,t.getMessage()));
+
+            }
+        });
+    }
+
 }

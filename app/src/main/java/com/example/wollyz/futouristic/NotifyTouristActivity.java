@@ -10,7 +10,10 @@ import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.app.NotificationCompat;
-import android.widget.Toast;
+
+import com.example.wollyz.futouristic.RestApiPOJO.Attractions;
+import com.example.wollyz.futouristic.RestApiPOJO.TourNearby;
+import com.example.wollyz.futouristic.RestApiPOJO.TouristInterest;
 
 import org.greenrobot.eventbus.Subscribe;
 
@@ -18,6 +21,7 @@ import java.util.ArrayList;
 import java.util.StringTokenizer;
 
 public class NotifyTouristActivity extends AppCompatActivity {
+
 
     private ViewPager viewPager;
     private TouristSwipeAdapter swipeAdapter;
@@ -68,13 +72,6 @@ public class NotifyTouristActivity extends AppCompatActivity {
         BusProvider.getInstance().register(this);
     }
 
-    /*
-    @Override
-    public void onPause(){
-        super.onPause();
-
-    }
-    */
 
     @Override
     public void onStop(){
@@ -85,7 +82,7 @@ public class NotifyTouristActivity extends AppCompatActivity {
     @Subscribe
     public void onLandmarkSelectedEvent(TouristInterestEvent event){
         selected = event.getSelectedTour();
-        guide_username = selected.getGuideName();
+        TouristMainActivity.guide_username = selected.getGuideName();
         price = selected.getPrice();
         touristInterest.setGuideUsername(selected.getGuideName());
         touristInterest.setLandmark(selected.getLandmark());
@@ -101,7 +98,7 @@ public class NotifyTouristActivity extends AppCompatActivity {
         //gets its lat and long
         int tourIndex = getIndex(touristInterest.getLandmark());
         if(tourIndex >= 0){
-            attraction = allLandmarks.get(tourIndex);
+            TouristMainActivity.selectedAttraction = allLandmarks.get(tourIndex);
         }
         StringTokenizer time = new StringTokenizer(selected.getStartTime(),":");
         String time_hr = time.nextToken();
@@ -115,15 +112,10 @@ public class NotifyTouristActivity extends AppCompatActivity {
         //start time in milliseconds
         int startTime = hr + min + sec;
 
-        //remind 10 mins before tour starts
+        //remind 15 mins before tour starts
         int notifyTime = startTime - (10 * 60 * 1000);
 
-        //scheduleReminder(50000);
-
-
-
-
-        finish();
+        scheduleReminder(notifyTime);
     }
 
     private int getIndex(String landmark){
@@ -153,11 +145,7 @@ public class NotifyTouristActivity extends AppCompatActivity {
         long futureInMillis = SystemClock.elapsedRealtime() + delay;
         AlarmManager alarmManager = (AlarmManager)getSystemService(Context.ALARM_SERVICE);
         alarmManager.set(AlarmManager.ELAPSED_REALTIME_WAKEUP,futureInMillis,pendingIntent);
-        //finish();
+        finish();
 
     }
-
-
-
-
 }

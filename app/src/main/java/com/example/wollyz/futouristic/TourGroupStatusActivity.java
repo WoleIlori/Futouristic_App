@@ -8,6 +8,8 @@ import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.example.wollyz.futouristic.RestApiPOJO.TourGroupStatus;
+
 import org.greenrobot.eventbus.Subscribe;
 
 public class TourGroupStatusActivity extends AppCompatActivity {
@@ -62,6 +64,7 @@ public class TourGroupStatusActivity extends AppCompatActivity {
                     Log.d("TOUR","Tour entries now opened");
                 }
 
+
             }
         });
 
@@ -94,5 +97,4 @@ public class TourGroupStatusActivity extends AppCompatActivity {
             Toast.makeText(getApplicationContext(), "Tour has ended", Toast.LENGTH_SHORT).show();
         }
     }
-
 }

@@ -1,5 +1,7 @@
 package com.example.wollyz.futouristic;
 
+import com.example.wollyz.futouristic.RestApiPOJO.GuideLocation;
+
 /**
  * Created by Wollyz on 12/03/2018.
  */
